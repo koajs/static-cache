@@ -1,0 +1,35 @@
+{
+  "name": "koa-static-cache",
+  "description": "Static cache for koa",
+  "version": "0.0.1",
+  "author": {
+    "name": "Jonathan Ong",
+    "email": "me@jongleberry.com",
+    "url": "http://jongleberry.com",
+    "twitter": "https://twitter.com/jongleberry"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonathanong/koa-static-cache.git"
+  },
+  "bugs": {
+    "mail": "me@jongleberry.com",
+    "url": "https://github.com/jonathanong/koa-static-cache/issues"
+  },
+  "peerDependencies": {
+    "koa": "*"
+  },
+  "devDependencies": {
+    "koa": "*",
+    "mocha": "~1.12.0",
+    "should": "~1.2.2",
+    "supertest": "~0.7.1"
+  },
+  "scripts": {
+    "test": "make test"
+  },
+  "engines": {
+    "node": "> 0.11.4"
+  }
+}
