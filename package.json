@@ -17,6 +17,9 @@
     "mail": "me@jongleberry.com",
     "url": "https://github.com/jonathanong/koa-static-cache/issues"
   },
+  "dependencies": {
+    "mime": "~1.2.11"
+  },
   "peerDependencies": {
     "koa": "*"
   },

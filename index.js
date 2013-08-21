@@ -9,32 +9,20 @@ module.exports = function staticCache(dir, options) {
   if (typeof dir !== 'string')
     throw TypeError('Dir must be a defined string')
 
-  var maxAge = options.maxAge || 0
-  maxAge = maxAge && 'public, max-age="' + maxAge
+  var cacheControl = 'public, max-age=' + (options.maxAge || 0)
+  var files = {}
 
-  var files = fs.readdirSync(dir)
-  .filter(function (name) {
-    return name[0] !== '.'
-  })
-  .map(function (name) {
-    var file = path.join(dir, name)
-    var stats = fs.statSync(file)
-    var obj = {
-      pathname: '/' + name,
-      path: file,
-      type: mime.lookup(name),
-      mtime: new Date(stats.mtime),
-      length: stats.size
-    }
+  readDir(dir).forEach(function (name) {
+    var pathname = '/' + name
+    var obj = files[pathname] = {}
+    var filename = obj.path = path.join(dir, name)
+    var buffer = obj.buffer = fs.readFileSync(filename)
 
-    // Asynchronously retrieve the md5 hash of the file
-    fs.createReadStream(file)
-    .pipe(crypto.createHash('md5'))
-    .on('readable', function () {
-      obj.etag = this.read().toString('hex')
-    })
-
-    return obj
+    obj.pathname = pathname
+    obj.type = mime.lookup(name)
+    obj.mtime = new Date(fs.statSync(filename).mtime)
+    obj.length = buffer.length
+    obj.etag = '"' + crypto.createHash('md5').update(buffer).digest('hex') + '"'
   })
 
   return function (next) {
@@ -51,15 +39,13 @@ module.exports = function staticCache(dir, options) {
         case 'HEAD':
         case 'GET':
           this.type = file.type
+          this.set('Cache-Control', cacheControl)
           this.set('Content-Length', file.length)
           this.set('Last-Modified', file.mtime)
           this.set('ETag', file.etag)
-          if (maxAge)
-            this.set('Cache-Control', maxAge)
+          this.body = file.buffer
           if (this.fresh)
-            return this.status = 304
-          if (this.method === 'GET')
-            this.body = fs.createReadStream(file.path)
+            this.status = 304
           return
         default:
           this.status = 405
@@ -68,4 +54,23 @@ module.exports = function staticCache(dir, options) {
       }
     }
   }
+}
+
+// Recursively read the directory
+function readDir(root, prefix, files) {
+  prefix = prefix || ''
+  files = files || []
+
+  var dir = path.join(root, prefix)
+  if (fs.lstatSync(dir).isDirectory()) {
+    fs.readdirSync(dir).filter(function (name) {
+      return name[0] !== '.'
+    }).forEach(function (name) {
+      readDir(root, path.join(prefix, name), files)
+    })
+  } else {
+    files.push(prefix)
+  }
+
+  return files
 }

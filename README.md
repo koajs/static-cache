@@ -1,8 +1,27 @@
 # Koa Static Cache [![Build Status](https://travis-ci.org/jonathanong/koa-static-cache.png)](https://travis-ci.org/jonathanong/koa-static-cache)
 
 Static server for koa.
-Caches files' metadata in memory, but not the file themselves.
-Assumes no file changes occur during production - file changes require a process restart.
+Caches files' and their metadata in memory.
+Any file changes requires a process restart.
+
+You should __not__ use this for serving any large files.
+This is only useful for small assets such as icons or Javascript/CSS.
+
+## API
+
+### staticCache(dir, options)
+
+```js
+var path = require('path')
+var staticCache = require('koa-static-cache')
+
+app.use(staticCache(path.join(__dirname, 'public')), {
+  maxAge: 365 * 24 * 60 * 60
+})
+```
+
+`dir` - the directory you wish to serve.
+`options.maxAge` - cache control max age for the files.
 
 ## License
 
