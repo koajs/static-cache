@@ -96,4 +96,10 @@ describe('Static Cache', function () {
     .expect('Allow', 'HEAD,GET,OPTIONS')
     .expect(405, done)
   })
+
+  it('should ignore query strings', function (done) {
+    request(server)
+    .get('/index.js?query=string')
+    .expect(200, done)
+  })
 })
