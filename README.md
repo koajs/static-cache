@@ -21,7 +21,7 @@ app.use(staticCache(path.join(__dirname, 'public')), {
 ```
 
 `dir` - the directory you wish to serve.
-`options.maxAge` - cache control max age for the files.
+`options.maxAge` - cache control max age for the files, `0` by default.
 
 ## License
 
