@@ -9,11 +9,38 @@ app.use(staticCache(path.join(__dirname, '..')))
 
 var server = http.createServer(app.callback())
 
+var app2 = koa()
+app.use(staticCache(path.join(__dirname, '..'), {
+  buffer: true
+}))
+
+var server2 = http.createServer(app.callback())
+
 describe('Static Cache', function () {
   var etag
 
   it('should serve files', function (done) {
     request(server)
+    .get('/index.js')
+    .expect(200)
+    .expect('Cache-Control', 'public, max-age=0')
+    .expect('Content-Type', /javascript/)
+    .end(function (err, res) {
+      if (err)
+        return done(err)
+
+      res.should.have.header('Content-Length')
+      res.should.have.header('Last-Modified')
+      res.should.have.header('ETag')
+
+      etag = res.headers.etag
+
+      done()
+    })
+  })
+
+  it('should serve files as buffers', function (done) {
+    request(server2)
     .get('/index.js')
     .expect(200)
     .expect('Cache-Control', 'public, max-age=0')

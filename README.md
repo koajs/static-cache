@@ -1,11 +1,9 @@
 # Koa Static Cache [![Build Status](https://travis-ci.org/jonathanong/koa-static-cache.png)](https://travis-ci.org/jonathanong/koa-static-cache)
 
 Static server for koa.
-Caches files' and their metadata in memory.
-Any file changes requires a process restart.
-
-You should __not__ use this for serving any large files.
-This is only useful for small assets such as icons or Javascript/CSS.
+Caches files' metadata in memory.
+Optionally store the memory as well - streams by default.
+There is no directory or `index.html` support.
 
 ## API
 
@@ -22,6 +20,7 @@ app.use(staticCache(path.join(__dirname, 'public')), {
 
 `dir` - the directory you wish to serve.
 `options.maxAge` - cache control max age for the files, `0` by default.
+`options.buffer` - store the files in memory instead of streaming from the filesystem on each request.
 
 ## License
 

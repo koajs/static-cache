@@ -16,13 +16,19 @@ module.exports = function staticCache(dir, options) {
     var pathname = '/' + name
     var obj = files[pathname] = {}
     var filename = obj.path = path.join(dir, name)
-    var buffer = obj.buffer = fs.readFileSync(filename)
+    var stats = fs.statSync(filename)
+    var buffer = fs.readFileSync(filename)
 
-    obj.pathname = pathname
     obj.type = mime.lookup(name)
-    obj.mtime = new Date(fs.statSync(filename).mtime)
-    obj.length = buffer.length
-    obj.etag = '"' + crypto.createHash('md5').update(buffer).digest('hex') + '"'
+    obj.mtime = new Date(stats.mtime)
+    obj.length = stats.size
+    obj.etag = '"' + crypto
+      .createHash('md5')
+      .update(buffer)
+      .digest('hex') + '"'
+
+    if (options.buffer)
+      obj.buffer = buffer
   })
 
   return function (next) {
@@ -32,10 +38,6 @@ module.exports = function staticCache(dir, options) {
         return next()
 
       switch (this.method) {
-        case 'OPTIONS':
-          this.status = 204
-          this.set('Allow', 'HEAD,GET,OPTIONS')
-          return
         case 'HEAD':
         case 'GET':
           this.type = file.type
@@ -45,7 +47,14 @@ module.exports = function staticCache(dir, options) {
           this.set('ETag', file.etag)
           this.body = file.buffer
           if (this.fresh)
-            this.status = 304
+            return this.status = 304
+          if (this.method === 'GET')
+            return this.body = file.buffer
+              || fs.createReadStream(file.path)
+          return
+        case 'OPTIONS':
+          this.status = 204
+          this.set('Allow', 'HEAD,GET,OPTIONS')
           return
         default:
           this.status = 405
