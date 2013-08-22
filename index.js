@@ -31,7 +31,7 @@ module.exports = function staticCache(dir, options) {
       obj.buffer = buffer
   })
 
-  return function (next) {
+  return function staticCache(next) {
     return function* () {
       var file = files[this.path]
       if (!file)
