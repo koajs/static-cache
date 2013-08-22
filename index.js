@@ -45,7 +45,6 @@ module.exports = function staticCache(dir, options) {
           this.set('Content-Length', file.length)
           this.set('Last-Modified', file.mtime)
           this.set('ETag', file.etag)
-          this.body = file.buffer
           if (this.fresh)
             return this.status = 304
           if (this.method === 'GET')
