@@ -24,7 +24,7 @@
     "koa": "*"
   },
   "devDependencies": {
-    "koa": "*",
+    "koa": "koajs/koa",
     "mocha": "~1.12.0",
     "should": "~1.2.2",
     "supertest": "~0.7.1"

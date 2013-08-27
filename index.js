@@ -29,6 +29,8 @@ module.exports = function staticCache(dir, options) {
 
     if (options.buffer)
       obj.buffer = buffer
+
+    buffer = null
   })
 
   return function staticCache(next) {
