@@ -18,7 +18,8 @@
     "url": "https://github.com/jonathanong/koa-static-cache/issues"
   },
   "dependencies": {
-    "mime": "~1.2.11"
+    "mime": "~1.2.11",
+    "debug": "~0.7.2"
   },
   "peerDependencies": {
     "koa": "*"

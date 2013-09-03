@@ -5,7 +5,11 @@ var path = require('path')
 var staticCache = require('..')
 
 var app = koa()
-app.use(staticCache(path.join(__dirname, '..')))
+app.use(staticCache(path.join(__dirname, '..'), {
+  alias: {
+    '/package': '/package.json'
+  }
+}))
 
 var server = http.createServer(app.callback())
 
@@ -127,6 +131,13 @@ describe('Static Cache', function () {
   it('should ignore query strings', function (done) {
     request(server)
     .get('/index.js?query=string')
+    .expect(200, done)
+  })
+
+  it('should alias paths', function (done) {
+    request(server)
+    .get('/package')
+    .expect('Content-Type', /json/)
     .expect(200, done)
   })
 })

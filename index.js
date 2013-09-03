@@ -2,6 +2,7 @@ var crypto = require('crypto')
 var fs = require('fs')
 var path = require('path')
 var mime = require('mime')
+var debug = require('debug')('koa-static-cache')
 
 module.exports = function staticCache(dir, options) {
   options = options || {}
@@ -32,6 +33,17 @@ module.exports = function staticCache(dir, options) {
 
     buffer = null
   })
+
+  if (options.alias) {
+    Object.keys(options.alias).forEach(function (key) {
+      var value = options.alias[key]
+
+      if (files[value]) {
+        files[key] = files[value]
+        debug('aliasing ' + value + ' as ' + key)
+      }
+    })
+  }
 
   return function staticCache(next) {
     return function* () {
