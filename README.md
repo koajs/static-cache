@@ -10,7 +10,7 @@ Differences between this library and other libraries such as [static](https://gi
 
 ## API
 
-### staticCache(dir, options)
+### staticCache(dir [, options])
 
 ```js
 var path = require('path')
