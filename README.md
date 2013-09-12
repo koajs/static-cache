@@ -1,9 +1,12 @@
 # Koa Static Cache [![Build Status](https://travis-ci.org/jonathanong/koa-static-cache.png)](https://travis-ci.org/jonathanong/koa-static-cache)
 
 Static server for koa.
-Caches files' metadata in memory.
-Optionally store the memory as well - streams by default.
-There is no directory or `index.html` support.
+
+Differences between this library and other libraries such as [static](https://github.com/koajs/static):
+
+- There is no directory or `index.html` support.
+- You may optionally store the data in memory - it streams by default.
+- Caches the assets on initialization - you need to restart the process to update the assets.
 
 ## API
 
@@ -21,6 +24,20 @@ app.use(staticCache(path.join(__dirname, 'public')), {
 `dir` - the directory you wish to serve.
 `options.maxAge` - cache control max age for the files, `0` by default.
 `options.buffer` - store the files in memory instead of streaming from the filesystem on each request.
+`options.alias` - object map of aliases. 
+
+### Aliases
+
+For example, if you have this alias object:
+
+```js
+{
+  '/favicon.png': '/favicon-32.png'
+}
+```
+
+Then requests to `/favicon.png` will actually return `/favicon-32.png` without redirects or anything.
+This is particularly important when serving [favicons](https://github.com/audreyr/favicon-cheat-sheet) as you don't want to store duplicate images.
 
 ## License
 
