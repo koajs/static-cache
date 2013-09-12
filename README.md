@@ -21,10 +21,10 @@ app.use(staticCache(path.join(__dirname, 'public')), {
 })
 ```
 
-`dir` - the directory you wish to serve.
-`options.maxAge` - cache control max age for the files, `0` by default.
-`options.buffer` - store the files in memory instead of streaming from the filesystem on each request.
-`options.alias` - object map of aliases. 
+- `dir` - the directory you wish to serve.
+- `options.maxAge` - cache control max age for the files, `0` by default.
+- `options.buffer` - store the files in memory instead of streaming from the filesystem on each request.
+- `options.alias` - object map of aliases. See below.
 
 ### Aliases
 
