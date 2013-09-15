@@ -10,7 +10,7 @@ Differences between this library and other libraries such as [static](https://gi
 
 ## API
 
-### staticCache(dir [, options])
+### staticCache(dir [, options] [, files])
 
 ```js
 var path = require('path')
@@ -25,6 +25,7 @@ app.use(staticCache(path.join(__dirname, 'public')), {
 - `options.maxAge` - cache control max age for the files, `0` by default.
 - `options.buffer` - store the files in memory instead of streaming from the filesystem on each request.
 - `options.alias` - object map of aliases. See below.
+- `options.files` - optional files object. See below.
 
 ### Aliases
 
@@ -38,6 +39,48 @@ For example, if you have this alias object:
 
 Then requests to `/favicon.png` will actually return `/favicon-32.png` without redirects or anything.
 This is particularly important when serving [favicons](https://github.com/audreyr/favicon-cheat-sheet) as you don't want to store duplicate images.
+
+### Files
+
+You can pass in an optional files object.
+This allows you to do two things:
+
+#### Combining directories into a single middleware
+
+Instead of doing:
+
+```js
+app.use(staticCache('/public/js'))
+app.use(staticCache('/public/css'))
+```
+
+You can do this:
+
+```js
+var files = {}
+
+// Mount the middleware
+app.use(staticCache('/public/js', {}, files))
+
+// Add additional files
+staticCache('/public/css', {}, files)
+```
+
+The benefit is that you'll have one less function added to the stack as well as doing one hash lookup instead of two.
+
+#### Editing the files object
+
+For example, if you want to change the max age of `/package.json`, you can do the following:
+
+```js
+var files = {}
+
+app.use(staticCache('/public', {
+  maxAge: 60 * 60 * 24 * 365
+}, files))
+
+files['/package.json'].maxAge = 60 * 60 * 24 * 30
+```
 
 ## License
 
