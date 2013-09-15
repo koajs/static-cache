@@ -44,6 +44,7 @@ module.exports = function staticCache(dir, options, files) {
 
       if (files[value]) {
         files[key] = files[value]
+
         debug('aliasing ' + value + ' as ' + key)
       }
     })
@@ -63,13 +64,14 @@ module.exports = function staticCache(dir, options, files) {
           if (this.fresh)
             return this.status = 304
 
+          this.type = file.type
+          this.length = file.length
+          this.set('Cache-Control', 'public, max-age=' + file.maxAge)
+
           if (this.method === 'GET')
             this.body = file.buffer
               || fs.createReadStream(file.path)
 
-          this.type = file.type
-          this.length = file.length
-          this.set('Cache-Control', 'public, max-age=' + file.maxAge)
           return
         case 'OPTIONS':
           this.status = 204
