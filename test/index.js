@@ -5,11 +5,12 @@ var path = require('path')
 var staticCache = require('..')
 
 var app = koa()
+var files = {}
 app.use(staticCache(path.join(__dirname, '..'), {
   alias: {
     '/package': '/package.json'
   }
-}))
+}, files))
 
 var server = http.createServer(app.callback())
 
@@ -138,6 +139,15 @@ describe('Static Cache', function () {
     request(server)
     .get('/package')
     .expect('Content-Type', /json/)
+    .expect(200, done)
+  })
+
+  it('should be configurable via object', function (done) {
+    files['/package.json'].maxAge = 1
+
+    request(server)
+    .get('/package.json')
+    .expect('Cache-Control', 'public, max-age=1')
     .expect(200, done)
   })
 })

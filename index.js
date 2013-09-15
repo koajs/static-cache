@@ -4,14 +4,12 @@ var path = require('path')
 var mime = require('mime')
 var debug = require('debug')('koa-static-cache')
 
-module.exports = function staticCache(dir, options) {
-  options = options || {}
-
+module.exports = function staticCache(dir, options, files) {
   if (typeof dir !== 'string')
     throw TypeError('Dir must be a defined string')
 
-  var cacheControl = 'public, max-age=' + (options.maxAge || 0)
-  var files = {}
+  options = options || {}
+  files = files || options.files || {}
 
   readDir(dir).forEach(function (name) {
     var pathname = '/' + name
@@ -20,13 +18,19 @@ module.exports = function staticCache(dir, options) {
     var stats = fs.statSync(filename)
     var buffer = fs.readFileSync(filename)
 
-    obj.type = mime.lookup(name)
-    obj.mtime = new Date(stats.mtime)
+    obj.maxAge = options.maxAge || 0
+    obj.type = obj.mime = mime.lookup(pathname)
+    obj.charset = mime.charsets.lookup(obj.mime)
+    if (obj.charset)
+      obj.type += '; charset=' + obj.charset.toLowerCase()
+    obj.mtime = new Date(stats.mtime).toUTCString()
     obj.length = stats.size
     obj.etag = '"' + crypto
       .createHash('md5')
       .update(buffer)
       .digest('hex') + '"'
+
+    debug('file: ' + JSON.stringify(obj, null, 2))
 
     if (options.buffer)
       obj.buffer = buffer
@@ -54,16 +58,18 @@ module.exports = function staticCache(dir, options) {
       switch (this.method) {
         case 'HEAD':
         case 'GET':
-          this.type = file.type
-          this.set('Cache-Control', cacheControl)
-          this.set('Content-Length', file.length)
           this.set('Last-Modified', file.mtime)
           this.set('ETag', file.etag)
           if (this.fresh)
             return this.status = 304
+
           if (this.method === 'GET')
-            return this.body = file.buffer
+            this.body = file.buffer
               || fs.createReadStream(file.path)
+
+          this.type = file.type
+          this.length = file.length
+          this.set('Cache-Control', 'public, max-age=' + file.maxAge)
           return
         case 'OPTIONS':
           this.status = 204
