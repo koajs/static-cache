@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "mime": "~1.2.11",
+    "fs-readdir-recursive": "~0.0.1",
     "debug": "*"
   },
   "peerDependencies": {

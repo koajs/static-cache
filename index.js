@@ -2,6 +2,7 @@ var crypto = require('crypto')
 var fs = require('fs')
 var path = require('path')
 var mime = require('mime')
+var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
 
 module.exports = function staticCache(dir, options, files) {
@@ -84,23 +85,4 @@ module.exports = function staticCache(dir, options, files) {
       }
     }
   }
-}
-
-// Recursively read the directory
-function readDir(root, prefix, files) {
-  prefix = prefix || ''
-  files = files || []
-
-  var dir = path.join(root, prefix)
-  if (fs.lstatSync(dir).isDirectory()) {
-    fs.readdirSync(dir).filter(function (name) {
-      return name[0] !== '.'
-    }).forEach(function (name) {
-      readDir(root, path.join(prefix, name), files)
-    })
-  } else {
-    files.push(prefix)
-  }
-
-  return files
 }
