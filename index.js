@@ -55,7 +55,7 @@ module.exports = function staticCache(dir, options, files) {
     return function* () {
       var file = files[this.path]
       if (!file)
-        return next()
+        return yield next()
 
       switch (this.method) {
         case 'HEAD':
