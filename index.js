@@ -19,6 +19,7 @@ module.exports = function staticCache(dir, options, files) {
     var stats = fs.statSync(filename)
     var buffer = fs.readFileSync(filename)
 
+    obj.cacheControl = options.cacheControl
     obj.maxAge = options.maxAge || 0
     obj.type = obj.mime = mime.lookup(pathname)
     obj.charset = mime.charsets.lookup(obj.mime)
@@ -67,7 +68,7 @@ module.exports = function staticCache(dir, options, files) {
 
           this.type = file.type
           this.length = file.length
-          this.set('Cache-Control', 'public, max-age=' + file.maxAge)
+          this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
 
           if (this.method === 'GET')
             this.body = file.buffer

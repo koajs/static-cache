@@ -1,4 +1,4 @@
-# Koa Static Cache [![Build Status](https://travis-ci.org/jonathanong/koa-static-cache.png)](https://travis-ci.org/jonathanong/koa-static-cache)
+# Koa Static Cache [![Build Status](https://travis-ci.org/koajs/static-cache.png)](https://travis-ci.org/koajs/static-cache)
 
 Static server for koa.
 
@@ -7,6 +7,7 @@ Differences between this library and other libraries such as [static](https://gi
 - There is no directory or `index.html` support.
 - You may optionally store the data in memory - it streams by default.
 - Caches the assets on initialization - you need to restart the process to update the assets.
+- Uses MD5 hash sum as an ETag.
 
 ## API
 
@@ -21,11 +22,12 @@ app.use(staticCache(path.join(__dirname, 'public')), {
 })
 ```
 
-- `dir` - the directory you wish to serve.
-- `options.maxAge` - cache control max age for the files, `0` by default.
-- `options.buffer` - store the files in memory instead of streaming from the filesystem on each request.
-- `options.alias` - object map of aliases. See below.
-- `options.files` - optional files object. See below.
+- `dir` (str) - the directory you wish to serve.
+- `options.maxAge` (int) - cache control max age for the files, `0` by default.
+- `options.cacheControl` (str) - optional cache control header. Overrides `options.maxAge`.
+- `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
+- `options.alias` (obj) - object map of aliases. See below.
+- `options.files` (obj) - optional files object. See below.
 
 ### Aliases
 
