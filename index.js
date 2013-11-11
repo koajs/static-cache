@@ -52,38 +52,36 @@ module.exports = function staticCache(dir, options, files) {
     })
   }
 
-  return function staticCache(next) {
-    return function* () {
-      var file = files[this.path]
-      if (!file)
-        return yield next()
+  return function* staticCache(next) {
+    var file = files[this.path]
+    if (!file)
+      return yield next
 
-      switch (this.method) {
-        case 'HEAD':
-        case 'GET':
-          this.set('Last-Modified', file.mtime)
-          this.set('ETag', file.etag)
-          if (this.fresh)
-            return this.status = 304
+    switch (this.method) {
+      case 'HEAD':
+      case 'GET':
+        this.set('Last-Modified', file.mtime)
+        this.set('ETag', file.etag)
+        if (this.fresh)
+          return this.status = 304
 
-          this.type = file.type
-          this.length = file.length
-          this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
+        this.type = file.type
+        this.length = file.length
+        this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
 
-          if (this.method === 'GET')
-            this.body = file.buffer
-              || fs.createReadStream(file.path)
+        if (this.method === 'GET')
+          this.body = file.buffer
+            || fs.createReadStream(file.path)
 
-          return
-        case 'OPTIONS':
-          this.status = 204
-          this.set('Allow', 'HEAD,GET,OPTIONS')
-          return
-        default:
-          this.status = 405
-          this.set('Allow', 'HEAD,GET,OPTIONS')
-          return
-      }
+        return
+      case 'OPTIONS':
+        this.status = 204
+        this.set('Allow', 'HEAD,GET,OPTIONS')
+        return
+      default:
+        this.status = 405
+        this.set('Allow', 'HEAD,GET,OPTIONS')
+        return
     }
   }
 }
