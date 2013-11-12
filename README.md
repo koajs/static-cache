@@ -9,6 +9,12 @@ Differences between this library and other libraries such as [static](https://gi
 - Caches the assets on initialization - you need to restart the process to update the assets.
 - Uses MD5 hash sum as an ETag.
 
+## Installation
+
+```js
+$ npm install koa-static-cache
+```
+
 ## API
 
 ### staticCache(dir [, options] [, files])
