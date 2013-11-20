@@ -111,6 +111,7 @@ describe('Static Cache', function () {
   it('should support HEAD', function (done) {
     request(server)
     .head('/index.js')
+    .expect(200)
     .expect('', done)
   })
 

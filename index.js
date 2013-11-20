@@ -22,9 +22,6 @@ module.exports = function staticCache(dir, options, files) {
     obj.cacheControl = options.cacheControl
     obj.maxAge = options.maxAge || 0
     obj.type = obj.mime = mime.lookup(pathname)
-    obj.charset = mime.charsets.lookup(obj.mime)
-    if (obj.charset)
-      obj.type += '; charset=' + obj.charset.toLowerCase()
     obj.mtime = new Date(stats.mtime).toUTCString()
     obj.length = stats.size
     obj.etag = '"' + crypto
@@ -55,7 +52,7 @@ module.exports = function staticCache(dir, options, files) {
   return function* staticCache(next) {
     var file = files[this.path]
     if (!file)
-      return yield next
+      return yield* next
 
     switch (this.method) {
       case 'HEAD':
@@ -65,13 +62,12 @@ module.exports = function staticCache(dir, options, files) {
         if (this.fresh)
           return this.status = 304
 
+        this.body = this.method === 'GET'
+          ? file.buffer || fs.createReadStream(file.path)
+          : ''
         this.type = file.type
         this.length = file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
-
-        if (this.method === 'GET')
-          this.body = file.buffer
-            || fs.createReadStream(file.path)
 
         return
       case 'OPTIONS':
