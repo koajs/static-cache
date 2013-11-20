@@ -22,7 +22,7 @@ module.exports = function staticCache(dir, options, files) {
     obj.cacheControl = options.cacheControl
     obj.maxAge = options.maxAge || 0
     obj.type = obj.mime = mime.lookup(pathname)
-    obj.mtime = new Date(stats.mtime).toUTCString()
+    obj.mtime = stats.mtime.toUTCString()
     obj.length = stats.size
     obj.etag = '"' + crypto
       .createHash('md5')
