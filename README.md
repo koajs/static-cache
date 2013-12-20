@@ -33,7 +33,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.cacheControl` (str) - optional cache control header. Overrides `options.maxAge`.
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
 - `options.alias` (obj) - object map of aliases. See below.
-- `options.files` (obj) - optional files object. See below.
+- `files` (obj) - optional files object. See below.
 
 ### Aliases
 
