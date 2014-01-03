@@ -11,7 +11,7 @@ module.exports = function staticCache(dir, options, files) {
     throw TypeError('Dir must be a defined string')
 
   options = options || {}
-  files = files || options.files || {}
+  files = files || options.files || Object.create(null)
 
   readDir(dir).forEach(function (name) {
     var pathname = '/' + name
