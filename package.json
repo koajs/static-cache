@@ -24,10 +24,10 @@
     "debug": "*"
   },
   "peerDependencies": {
-    "koa": "*"
+    "koa": ">= 0.2.0"
   },
   "devDependencies": {
-    "koa": "koajs/koa",
+    "koa": "*",
     "mocha": "*",
     "should": "*",
     "supertest": "*"

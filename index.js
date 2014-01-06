@@ -25,10 +25,7 @@ module.exports = function staticCache(dir, options, files) {
     obj.type = obj.mime = mime.lookup(pathname)
     obj.mtime = stats.mtime.toUTCString()
     obj.length = stats.size
-    obj.etag = '"' + crypto
-      .createHash('md5')
-      .update(buffer)
-      .digest('hex') + '"'
+    obj.md5 = crypto.createHash('md5').update(buffer).digest('hex')
 
     debug('file: ' + JSON.stringify(obj, null, 2))
 
@@ -58,27 +55,25 @@ module.exports = function staticCache(dir, options, files) {
     switch (this.method) {
       case 'HEAD':
       case 'GET':
-        this.set('Last-Modified', file.mtime)
-        this.set('ETag', file.etag)
+        this.status = 200
+        this.response.lastModified = file.mtime
+        this.response.etag = file.md5
         if (this.fresh)
           return this.status = 304
-
-        if (this.method === 'GET') {
-          if (file.buffer) {
-            this.body = file.buffer
-          } else {
-            var stream = this.body = fs.createReadStream(file.path)
-            onSocketError(this, function () {
-              stream.destroy()
-            })
-          }
-        } else {
-          this.body = '' // set the body to notify a 200
-        }
 
         this.type = file.type
         this.length = file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
+
+        if (this.method === 'HEAD')
+          return
+
+        if (file.buffer) {
+          this.body = file.buffer
+        } else {
+          var stream = this.body = fs.createReadStream(file.path)
+          onSocketError(this, stream.destroy.bind(stream))
+        }
 
         return
       case 'OPTIONS':
