@@ -25,7 +25,7 @@ module.exports = function staticCache(dir, options, files) {
     obj.type = obj.mime = mime.lookup(pathname)
     obj.mtime = stats.mtime.toUTCString()
     obj.length = stats.size
-    obj.md5 = crypto.createHash('md5').update(buffer).digest('hex')
+    obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
 
     debug('file: ' + JSON.stringify(obj, null, 2))
 
@@ -64,6 +64,7 @@ module.exports = function staticCache(dir, options, files) {
         this.type = file.type
         this.length = file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
+        this.set('Content-MD5', file.md5)
 
         if (this.method === 'HEAD')
           return
@@ -72,6 +73,7 @@ module.exports = function staticCache(dir, options, files) {
           this.body = file.buffer
         } else {
           var stream = this.body = fs.createReadStream(file.path)
+          stream.on('error', this.onerror)
           onSocketError(this, stream.destroy.bind(stream))
         }
 

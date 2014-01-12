@@ -1,3 +1,5 @@
+var fs = require('fs')
+var crypto = require('crypto')
 var request = require('supertest')
 var koa = require('koa')
 var http = require('http')
@@ -15,7 +17,7 @@ app.use(staticCache(path.join(__dirname, '..'), {
 var server = http.createServer(app.callback())
 
 var app2 = koa()
-app.use(staticCache(path.join(__dirname, '..'), {
+app2.use(staticCache(path.join(__dirname, '..'), {
   buffer: true
 }))
 
@@ -149,6 +151,17 @@ describe('Static Cache', function () {
     request(server)
     .get('/package.json')
     .expect('Cache-Control', 'public, max-age=1')
+    .expect(200, done)
+  })
+
+  it('should set the etag and content-md5 headers', function (done) {
+    var pk = fs.readFileSync('package.json')
+    var md5 = crypto.createHash('md5').update(pk).digest('base64')
+
+    request(server)
+    .get('/package.json')
+    .expect('ETag', '"' + md5 + '"')
+    .expect('Content-MD5', md5)
     .expect(200, done)
   })
 })
