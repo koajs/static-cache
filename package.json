@@ -1,7 +1,7 @@
 {
   "name": "koa-static-cache",
   "description": "Static cache for koa",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": {
     "name": "Jonathan Ong",
     "email": "me@jongleberry.com",
@@ -18,7 +18,7 @@
     "url": "https://github.com/koajs/static-cache/issues"
   },
   "dependencies": {
-    "on-socket-error": "~1.0.1",
+    "on-socket-error": "~1.1.0",
     "mime": "~1.2.11",
     "fs-readdir-recursive": "~0.0.1",
     "debug": "*"
