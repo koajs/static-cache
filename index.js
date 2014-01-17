@@ -2,7 +2,7 @@ var crypto = require('crypto')
 var fs = require('fs')
 var path = require('path')
 var mime = require('mime')
-var onSocketError = require('on-socket-error')
+var onFinished = require('finished')
 var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
 
@@ -74,7 +74,7 @@ module.exports = function staticCache(dir, options, files) {
         } else {
           var stream = this.body = fs.createReadStream(file.path)
           stream.on('error', this.onerror)
-          onSocketError(this, stream.destroy.bind(stream))
+          onFinished(this, stream.destroy.bind(stream))
         }
 
         return

@@ -18,7 +18,7 @@
     "url": "https://github.com/koajs/static-cache/issues"
   },
   "dependencies": {
-    "on-socket-error": "~1.1.0",
+    "finished": "~1.1.1",
     "mime": "~1.2.11",
     "fs-readdir-recursive": "~0.0.1",
     "debug": "*"
