@@ -14,6 +14,7 @@ module.exports = function staticCache(dir, options, files) {
   files = files || options.files || Object.create(null)
 
   readDir(dir).forEach(function (name) {
+    name = name.replace(/\\/g, '/')
     var pathname = '/' + name
     var obj = files[pathname] = {}
     var filename = obj.path = path.join(dir, name)
