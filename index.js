@@ -1,5 +1,6 @@
 var crypto = require('crypto')
 var fs = require('fs')
+var zlib = require('zlib')
 var path = require('path')
 var mime = require('mime')
 var onFinished = require('finished')
@@ -9,6 +10,12 @@ var debug = require('debug')('koa-static-cache')
 var stat = function (file) {
   return function (done) {
     fs.stat(file, done)
+  }
+}
+
+function gzip(buf) {
+  return function (done) {
+    zlib.gzip(buf, done)
   }
 }
 
@@ -35,7 +42,6 @@ module.exports = function staticCache(dir, options, files) {
     obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
 
     debug('file: ' + JSON.stringify(obj, null, 2))
-
     if (options.buffer)
       obj.buffer = buffer
 
@@ -80,14 +86,29 @@ module.exports = function staticCache(dir, options, files) {
           return this.status = 304
 
         this.type = file.type
-        this.length = file.length
+        this.length = file.zipBuffer? file.zipBuffer.length : file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
         if (file.md5) this.set('Content-MD5', file.md5)
 
         if (this.method === 'HEAD')
           return
-        if (file.buffer)
-          return this.body = file.buffer
+
+        if (file.zipBuffer) {
+          this.set('Content-Encoding', 'gzip')
+          this.body = file.zipBuffer
+          return
+        }
+
+        if (file.buffer) {
+          if (this.acceptsEncodings('gzip') === 'gzip') {
+            file.zipBuffer = yield gzip(file.buffer)
+            this.set('Content-Encoding', 'gzip')
+            this.body = file.zipBuffer
+          } else {
+            this.body = file.nbuffer
+          }
+          return;
+        }
 
         var stream = this.body = fs.createReadStream(file.path)
         stream.on('error', this.onerror)

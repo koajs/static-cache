@@ -1,5 +1,6 @@
 var fs = require('fs')
 var crypto = require('crypto')
+var zlib = require('zlib')
 var request = require('supertest')
 var koa = require('koa')
 var http = require('http')
@@ -21,7 +22,7 @@ app2.use(staticCache(path.join(__dirname, '..'), {
   buffer: true
 }))
 
-var server2 = http.createServer(app.callback())
+var server2 = http.createServer(app2.callback())
 
 describe('Static Cache', function () {
   var etag
@@ -62,6 +63,32 @@ describe('Static Cache', function () {
       etag = res.headers.etag
 
       done()
+    })
+  })
+
+  it('should serve files with gzip if buffered', function (done) {
+    var index = fs.readFileSync('index.js')
+    zlib.gzip(index, function (err, content) {
+      request(server2)
+      .get('/index.js')
+      .set('Accept-Encoding', 'gzip,deflate,sdch')
+      .expect(200)
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Content-Encoding', 'gzip')
+      .expect('Content-Type', /javascript/)
+      .expect('Content-Length', content.length)
+      .expect(index.toString())
+      .end(function (err, res) {
+        if (err)
+          return done(err)
+        res.should.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.have.header('ETag')
+
+        etag = res.headers.etag
+
+        done()
+      })
     })
   })
 
