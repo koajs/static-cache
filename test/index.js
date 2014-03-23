@@ -25,7 +25,6 @@ var server2 = http.createServer(app.callback())
 
 describe('Static Cache', function () {
   var etag
-
   it('should serve files', function (done) {
     request(server)
     .get('/index.js')
@@ -164,4 +163,28 @@ describe('Static Cache', function () {
     .expect('Content-MD5', md5)
     .expect(200, done)
   })
+
+  it('should set Last-Modified if file modified and not buffered', function (done) {
+    var readme = fs.readFileSync('README.md', 'utf8')
+    fs.writeFileSync('README.md', readme, 'utf8')
+    var mtime = fs.statSync('README.md').mtime
+
+    request(server)
+    .get('/README.md')
+    .expect('Last-Modified', mtime.toUTCString())
+    .expect(200, done)
+  })
+
+  it('should set the etag header after first request', function (done) {
+    var readme = fs.readFileSync('README.md', 'utf8')
+    var md5 = crypto.createHash('md5').update(readme).digest('base64')
+    var mtime = fs.statSync('README.md').mtime
+
+    request(server)
+    .get('/README.md')
+    .set('If-Modified-Since', mtime.toUTCString())
+    .expect('ETag', '"' + md5 + '"')
+    .expect('Last-Modified', mtime.toUTCString())
+    .expect(304, done)
+  });
 })
