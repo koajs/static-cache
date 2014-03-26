@@ -1,5 +1,6 @@
 var fs = require('fs')
 var crypto = require('crypto')
+var zlib = require('zlib')
 var request = require('supertest')
 var koa = require('koa')
 var http = require('http')
@@ -14,14 +15,35 @@ app.use(staticCache(path.join(__dirname, '..'), {
   }
 }, files))
 
+// force the files' mtime
+for (var key in files) {
+  files[key].mtime = new Date().toUTCString()
+}
 var server = http.createServer(app.callback())
 
 var app2 = koa()
 app2.use(staticCache(path.join(__dirname, '..'), {
   buffer: true
 }))
+var server2 = http.createServer(app2.callback())
 
-var server2 = http.createServer(app.callback())
+var app3 = koa()
+app3.use(staticCache(path.join(__dirname, '..'), {
+  buffer: true,
+  gzip: true
+}))
+var server3 = http.createServer(app3.callback())
+
+var app4 = koa()
+var files4 = {}
+app4.use(staticCache(path.join(__dirname, '..'), {
+  gzip: true
+}, files4))
+// force the files' mtime
+for (var key in files4) {
+  files4[key].mtime = new Date().toUTCString()
+}
+var server4 = http.createServer(app4.callback())
 
 describe('Static Cache', function () {
   var etag
@@ -38,7 +60,6 @@ describe('Static Cache', function () {
       res.should.have.header('Content-Length')
       res.should.have.header('Last-Modified')
       res.should.have.header('ETag')
-
       etag = res.headers.etag
 
       done()
@@ -165,26 +186,74 @@ describe('Static Cache', function () {
   })
 
   it('should set Last-Modified if file modified and not buffered', function (done) {
-    var readme = fs.readFileSync('README.md', 'utf8')
-    fs.writeFileSync('README.md', readme, 'utf8')
-    var mtime = fs.statSync('README.md').mtime
-
-    request(server)
-    .get('/README.md')
-    .expect('Last-Modified', mtime.toUTCString())
-    .expect(200, done)
+    setTimeout(function () {
+      var readme = fs.readFileSync('README.md', 'utf8')
+      fs.writeFileSync('README.md', readme, 'utf8')
+      var mtime = fs.statSync('README.md').mtime
+      var md5 = files['/README.md'].md5
+      request(server)
+      .get('/README.md')
+      .expect(200, function (err, res) {
+        res.should.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.not.have.header('ETag')
+        files['/README.md'].mtime.should.equal(mtime.toUTCString())
+        setTimeout(function () {
+          files['/README.md'].md5.should.equal(md5)
+        }, 10);
+        done()
+      })
+    }, 1000)
   })
 
-  it('should set the etag header after first request', function (done) {
-    var readme = fs.readFileSync('README.md', 'utf8')
-    var md5 = crypto.createHash('md5').update(readme).digest('base64')
-    var mtime = fs.statSync('README.md').mtime
+  it('should serve files with gzip buffer', function (done) {
+    var index = fs.readFileSync('index.js')
+    zlib.gzip(index, function (err, content) {
+      request(server3)
+      .get('/index.js')
+      .set('Accept-Encoding', 'gzip,deflate,sdch')
+      .expect(200)
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Content-Encoding', 'gzip')
+      .expect('Content-Type', /javascript/)
+      .expect('Content-Length', content.length)
+      .expect(index.toString())
+      .end(function (err, res) {
+        if (err)
+          return done(err)
+        res.should.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.have.header('ETag')
 
-    request(server)
-    .get('/README.md')
-    .set('If-Modified-Since', mtime.toUTCString())
-    .expect('ETag', '"' + md5 + '"')
-    .expect('Last-Modified', mtime.toUTCString())
-    .expect(304, done)
-  });
+        etag = res.headers.etag
+
+        done()
+      })
+    })
+  })
+
+  it('should serve files with gzip stream', function (done) {
+    var index = fs.readFileSync('index.js')
+    zlib.gzip(index, function (err, content) {
+      request(server4)
+      .get('/index.js')
+      .set('Accept-Encoding', 'gzip,deflate,sdch')
+      .expect(200)
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Content-Encoding', 'gzip')
+      .expect('Content-Type', /javascript/)
+      .expect(index.toString())
+      .end(function (err, res) {
+        if (err)
+          return done(err)
+        res.should.not.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.have.header('ETag')
+
+        etag = res.headers.etag
+
+        done()
+      })
+    })
+  })
 })

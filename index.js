@@ -1,5 +1,6 @@
 var crypto = require('crypto')
 var fs = require('fs')
+var zlib = require('zlib')
 var path = require('path')
 var mime = require('mime')
 var onFinished = require('finished')
@@ -12,12 +13,19 @@ var stat = function (file) {
   }
 }
 
+function gzip(buf) {
+  return function (done) {
+    zlib.gzip(buf, done)
+  }
+}
+
 module.exports = function staticCache(dir, options, files) {
   if (typeof dir !== 'string')
     throw TypeError('Dir must be a defined string')
 
   options = options || {}
   files = files || options.files || Object.create(null)
+  var enableGzip = !!options.gzip
 
   readDir(dir).forEach(function (name) {
     name = name.replace(/\\/g, '/')
@@ -35,7 +43,6 @@ module.exports = function staticCache(dir, options, files) {
     obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
 
     debug('file: ' + JSON.stringify(obj, null, 2))
-
     if (options.buffer)
       obj.buffer = buffer
 
@@ -80,17 +87,34 @@ module.exports = function staticCache(dir, options, files) {
           return this.status = 304
 
         this.type = file.type
-        this.length = file.length
+        this.length = file.zipBuffer ? file.zipBuffer.length : file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
         if (file.md5) this.set('Content-MD5', file.md5)
 
         if (this.method === 'HEAD')
           return
-        if (file.buffer)
-          return this.body = file.buffer
 
-        var stream = this.body = fs.createReadStream(file.path)
+        if (file.zipBuffer) {
+          this.set('Content-Encoding', 'gzip')
+          this.body = file.zipBuffer
+          return
+        }
+
+        if (file.buffer) {
+          if (enableGzip && this.acceptsEncodings('gzip') === 'gzip') {
+            file.zipBuffer = yield gzip(file.buffer)
+            this.set('Content-Encoding', 'gzip')
+            this.body = file.zipBuffer
+          } else {
+            this.body = file.buffer
+          }
+          return
+        }
+
+        var stream = fs.createReadStream(file.path)
         stream.on('error', this.onerror)
+
+        // update file hash
         if (!file.md5) {
           var hash = crypto.createHash('md5')
           stream.on('data', hash.update.bind(hash))
@@ -98,9 +122,17 @@ module.exports = function staticCache(dir, options, files) {
             file.md5 = hash.digest('base64')
           })
         }
+
+        // enable gzip will remove content length
+        if (enableGzip && this.acceptsEncodings('gzip') === 'gzip') {
+          this.remove('Content-Length')
+          this.set('Content-Encoding', 'gzip')
+          this.body = stream.pipe(zlib.createGzip())
+        } else {
+          this.body = stream
+        }
         onFinished(this, stream.destroy.bind(stream))
         return
-
       case 'OPTIONS':
         this.status = 204
         this.set('Allow', 'HEAD,GET,OPTIONS')
