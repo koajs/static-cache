@@ -1,7 +1,5 @@
 # Koa Static Cache [![Build Status](https://travis-ci.org/koajs/static-cache.png)](https://travis-ci.org/koajs/static-cache)
 
-NEEDS MAINTAINER
-
 Static server for koa.
 
 Differences between this library and other libraries such as [static](https://github.com/koajs/static):
