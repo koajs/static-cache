@@ -3,6 +3,7 @@ var fs = require('fs')
 var zlib = require('zlib')
 var path = require('path')
 var mime = require('mime')
+var compressible = require('compressible')
 var onFinished = require('finished')
 var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
@@ -100,8 +101,10 @@ module.exports = function staticCache(dir, options, files) {
           return
         }
 
+        var shouldGzip = enableGzip && this.acceptsEncodings('gzip') === 'gzip' && compressible(file.type)
+
         if (file.buffer) {
-          if (enableGzip && this.acceptsEncodings('gzip') === 'gzip') {
+          if (shouldGzip) {
             file.zipBuffer = yield gzip(file.buffer)
             this.set('Content-Encoding', 'gzip')
             this.body = file.zipBuffer
@@ -124,7 +127,7 @@ module.exports = function staticCache(dir, options, files) {
         }
 
         // enable gzip will remove content length
-        if (enableGzip && this.acceptsEncodings('gzip') === 'gzip') {
+        if (shouldGzip) {
           this.remove('Content-Length')
           this.set('Content-Encoding', 'gzip')
           this.body = stream.pipe(zlib.createGzip())

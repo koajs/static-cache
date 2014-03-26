@@ -20,6 +20,7 @@
   "dependencies": {
     "finished": "~1.1.1",
     "mime": "~1.2.11",
+    "compressible": "~1.0.1",
     "fs-readdir-recursive": "~0.0.1",
     "debug": "*"
   },
