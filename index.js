@@ -6,6 +6,12 @@ var onFinished = require('finished')
 var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
 
+var stat = function (file) {
+  return function (done) {
+    fs.stat(file, done)
+  }
+}
+
 module.exports = function staticCache(dir, options, files) {
   if (typeof dir !== 'string')
     throw TypeError('Dir must be a defined string')
@@ -57,28 +63,44 @@ module.exports = function staticCache(dir, options, files) {
       case 'HEAD':
       case 'GET':
         this.status = 200
+
+        if (!file.buffer) {
+          var stats = yield stat(file.path)
+          if (stats.mtime > new Date(file.mtime)) {
+            file.mtime = stats.mtime.toUTCString()
+            file.md5 = null
+            file.length = stats.size
+          }
+        }
+
         this.response.lastModified = file.mtime
-        this.response.etag = file.md5
+        if (file.md5) this.response.etag = file.md5
+
         if (this.fresh)
           return this.status = 304
 
         this.type = file.type
         this.length = file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
-        this.set('Content-MD5', file.md5)
+        if (file.md5) this.set('Content-MD5', file.md5)
 
         if (this.method === 'HEAD')
           return
+        if (file.buffer)
+          return this.body = file.buffer
 
-        if (file.buffer) {
-          this.body = file.buffer
-        } else {
-          var stream = this.body = fs.createReadStream(file.path)
-          stream.on('error', this.onerror)
-          onFinished(this, stream.destroy.bind(stream))
+        var stream = this.body = fs.createReadStream(file.path)
+        stream.on('error', this.onerror)
+        if (!file.md5) {
+          var hash = crypto.createHash('md5')
+          stream.on('data', hash.update.bind(hash))
+          stream.on('end', function () {
+            file.md5 = hash.digest('base64')
+          })
         }
-
+        onFinished(this, stream.destroy.bind(stream))
         return
+
       case 'OPTIONS':
         this.status = 204
         this.set('Allow', 'HEAD,GET,OPTIONS')
