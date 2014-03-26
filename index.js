@@ -72,6 +72,8 @@ module.exports = function staticCache(dir, options, files) {
       case 'GET':
         this.status = 200
 
+        if (enableGzip) this.vary('Accept-Encoding')
+
         if (!file.buffer) {
           var stats = yield stat(file.path)
           if (stats.mtime > new Date(file.mtime)) {
@@ -101,7 +103,10 @@ module.exports = function staticCache(dir, options, files) {
           return
         }
 
-        var shouldGzip = enableGzip && this.acceptsEncodings('gzip') === 'gzip' && compressible(file.type)
+        var shouldGzip = enableGzip
+          && file.length > 1024
+          && this.acceptsEncodings('gzip') === 'gzip'
+          && compressible(file.type)
 
         if (file.buffer) {
           if (shouldGzip) {

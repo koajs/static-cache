@@ -217,6 +217,7 @@ describe('Static Cache', function () {
       .expect('Content-Encoding', 'gzip')
       .expect('Content-Type', /javascript/)
       .expect('Content-Length', content.length)
+      .expect('Vary', 'Accept-Encoding')
       .expect(index.toString())
       .end(function (err, res) {
         if (err)
@@ -242,6 +243,7 @@ describe('Static Cache', function () {
       .expect('Cache-Control', 'public, max-age=0')
       .expect('Content-Encoding', 'gzip')
       .expect('Content-Type', /javascript/)
+      .expect('Vary', 'Accept-Encoding')
       .expect(index.toString())
       .end(function (err, res) {
         if (err)
