@@ -13,6 +13,11 @@
     "email": "fishrock123@rocketmail.com",
     "url": "https://searchbeam.jit.su",
     "twitter": "https://twitter.com/fishrock123"
+  }, {
+    "name": "dead_horse",
+    "email": "dead_horse@qq.com",
+    "url": "http://deadhorse.me",
+    "twitter": "https://twitter.com/deadhorse_busi"
   }],
   "keywords": [
     "koa",
