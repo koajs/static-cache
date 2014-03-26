@@ -211,7 +211,7 @@ describe('Static Cache', function () {
     zlib.gzip(index, function (err, content) {
       request(server3)
       .get('/index.js')
-      .set('Accept-Encoding', 'gzip,deflate,sdch')
+      .set('Accept-Encoding', 'gzip')
       .expect(200)
       .expect('Cache-Control', 'public, max-age=0')
       .expect('Content-Encoding', 'gzip')
@@ -237,7 +237,7 @@ describe('Static Cache', function () {
     zlib.gzip(index, function (err, content) {
       request(server4)
       .get('/index.js')
-      .set('Accept-Encoding', 'gzip,deflate,sdch')
+      .set('Accept-Encoding', 'gzip')
       .expect(200)
       .expect('Cache-Control', 'public, max-age=0')
       .expect('Content-Encoding', 'gzip')
