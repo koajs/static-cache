@@ -34,6 +34,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.maxAge` (int) - cache control max age for the files, `0` by default.
 - `options.cacheControl` (str) - optional cache control header. Overrides `options.maxAge`.
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
+- `options.gzip` (bool) - when the files store in memory and request's accpect-encoding include gzip, it will compressed by gzip.
 - `options.alias` (obj) - object map of aliases. See below.
 - `files` (obj) - optional files object. See below.
 

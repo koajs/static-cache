@@ -25,6 +25,7 @@ module.exports = function staticCache(dir, options, files) {
 
   options = options || {}
   files = files || options.files || Object.create(null)
+  var enableGzip = !!options.gzip
 
   readDir(dir).forEach(function (name) {
     name = name.replace(/\\/g, '/')
@@ -86,7 +87,7 @@ module.exports = function staticCache(dir, options, files) {
           return this.status = 304
 
         this.type = file.type
-        this.length = file.zipBuffer? file.zipBuffer.length : file.length
+        this.length = file.zipBuffer ? file.zipBuffer.length : file.length
         this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
         if (file.md5) this.set('Content-MD5', file.md5)
 
@@ -100,18 +101,20 @@ module.exports = function staticCache(dir, options, files) {
         }
 
         if (file.buffer) {
-          if (this.acceptsEncodings('gzip') === 'gzip') {
+          if (enableGzip && this.acceptsEncodings('gzip') === 'gzip') {
             file.zipBuffer = yield gzip(file.buffer)
             this.set('Content-Encoding', 'gzip')
             this.body = file.zipBuffer
           } else {
-            this.body = file.nbuffer
+            this.body = file.buffer
           }
-          return;
+          return
         }
 
-        var stream = this.body = fs.createReadStream(file.path)
+        var stream = fs.createReadStream(file.path)
         stream.on('error', this.onerror)
+
+        // update file hash
         if (!file.md5) {
           var hash = crypto.createHash('md5')
           stream.on('data', hash.update.bind(hash))
@@ -119,9 +122,17 @@ module.exports = function staticCache(dir, options, files) {
             file.md5 = hash.digest('base64')
           })
         }
+
+        // enable gzip will remove content length
+        if (enableGzip && this.acceptsEncodings('gzip') === 'gzip') {
+          this.remove('Content-Length')
+          this.set('Content-Encoding', 'gzip')
+          this.body = stream.pipe(zlib.createGzip())
+        } else {
+          this.body = stream
+        }
         onFinished(this, stream.destroy.bind(stream))
         return
-
       case 'OPTIONS':
         this.status = 204
         this.set('Allow', 'HEAD,GET,OPTIONS')
