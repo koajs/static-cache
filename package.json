@@ -8,6 +8,21 @@
     "url": "http://jongleberry.com",
     "twitter": "https://twitter.com/jongleberry"
   },
+  "contributors": [{
+    "name": "Jeremiah Senkpiel",
+    "email": "fishrock123@rocketmail.com",
+    "url": "https://searchbeam.jit.su",
+    "twitter": "https://twitter.com/fishrock123"
+  }],
+  "keywords": [
+    "koa",
+    "middleware",
+    "file",
+    "static",
+    "cache",
+    "gzip",
+    "sendfile"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
