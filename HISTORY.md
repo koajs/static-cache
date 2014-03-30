@@ -1,4 +1,11 @@
 
+1.0.8 / 2014-03-31
+==================
+
+  * support options.dir, default to process.cwd()
+  * add vary, check file's length when gzip
+  * Ensure files can be gzipped via compressible.
+
 1.0.7 / 2014-03-26
 ==================
 
