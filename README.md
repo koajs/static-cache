@@ -28,7 +28,8 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 }))
 ```
 
-- `dir` (str) - the directory you wish to serve.
+- `dir` (str) - the directory you wish to serve, priority than `options.dir`.
+- `options.dir` (str) - the directory you wish to serve, default to `process.cwd`.
 - `options.maxAge` (int) - cache control max age for the files, `0` by default.
 - `options.cacheControl` (str) - optional cache control header. Overrides `options.maxAge`.
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.

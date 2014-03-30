@@ -21,11 +21,16 @@ function gzip(buf) {
 }
 
 module.exports = function staticCache(dir, options, files) {
-  if (typeof dir !== 'string')
-    throw TypeError('Dir must be a defined string')
+  if (typeof dir === 'object') {
+    options = dir
+    files = options
+    dir = null
+  }
 
   options = options || {}
   files = files || options.files || Object.create(null)
+  dir = dir || options.dir || process.cwd()
+
   var enableGzip = !!options.gzip
 
   readDir(dir).forEach(function (name) {

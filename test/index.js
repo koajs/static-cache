@@ -46,6 +46,38 @@ for (var key in files4) {
 var server4 = http.createServer(app4.callback())
 
 describe('Static Cache', function () {
+
+  it('should dir priority than options.dir', function (done) {
+    var app = koa()
+    app.use(staticCache(path.join(__dirname, '..'), {
+      dir: __dirname
+    }))
+    var server = app.listen()
+    request(server)
+    .get('/index.js')
+    .expect(200, done)
+  })
+
+  it('should default options.dir works fine', function (done) {
+    var app = koa()
+    app.use(staticCache({
+      dir: path.join(__dirname, '..')
+    }))
+    var server = app.listen()
+    request(server)
+    .get('/index.js')
+    .expect(200, done)
+  })
+
+  it('should default process.cwd() works fine', function (done) {
+    var app = koa()
+    app.use(staticCache())
+    var server = app.listen()
+    request(server)
+    .get('/index.js')
+    .expect(200, done)
+  })
+
   var etag
   it('should serve files', function (done) {
     request(server)
@@ -200,7 +232,7 @@ describe('Static Cache', function () {
         files['/README.md'].mtime.should.equal(mtime.toUTCString())
         setTimeout(function () {
           files['/README.md'].md5.should.equal(md5)
-        }, 10);
+        }, 10)
         done()
       })
     }, 1000)
