@@ -35,6 +35,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
 - `options.gzip` (bool) - when request's accept-encoding include gzip, files will compressed by gzip.
 - `options.alias` (obj) - object map of aliases. See below.
+- `options.prefix` (str) - the url prefix you wish to add, default to `''`.
 - `files` (obj) - optional files object. See below.
 
 ### Aliases
