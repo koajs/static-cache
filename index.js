@@ -28,15 +28,14 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   options = options || {}
-  options.prefix = options.prefix || ''
+  options.prefix = (options.prefix || '').replace(/\/$/, '') + '/'
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
-
   var enableGzip = !!options.gzip
 
   readDir(dir).forEach(function (name) {
     name = name.replace(/\\/g, '/')
-    var pathname = options.prefix + '/' + name
+    var pathname = options.prefix + name
     var obj = files[pathname] = {}
     var filename = obj.path = path.join(dir, name)
     var stats = fs.statSync(filename)
