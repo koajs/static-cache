@@ -45,6 +45,13 @@ for (var key in files4) {
 }
 var server4 = http.createServer(app4.callback())
 
+var app5 = koa()
+app5.use(staticCache(path.join(__dirname, '..'), {
+  buffer: true,
+  prefix: '/static'
+}))
+var server5 = http.createServer(app5.callback())
+
 describe('Static Cache', function () {
 
   it('should dir priority than options.dir', function (done) {
@@ -288,6 +295,26 @@ describe('Static Cache', function () {
 
         done()
       })
+    })
+  })
+
+  it('should serve files with prefix', function (done) {
+    request(server5)
+    .get('/static/index.js')
+    .expect(200)
+    .expect('Cache-Control', 'public, max-age=0')
+    .expect('Content-Type', /javascript/)
+    .end(function (err, res) {
+      if (err)
+        return done(err)
+
+      res.should.have.header('Content-Length')
+      res.should.have.header('Last-Modified')
+      res.should.have.header('ETag')
+
+      etag = res.headers.etag
+
+      done()
     })
   })
 })
