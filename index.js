@@ -8,18 +8,6 @@ var onFinished = require('finished')
 var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
 
-var stat = function (file) {
-  return function (done) {
-    fs.stat(file, done)
-  }
-}
-
-function gzip(buf) {
-  return function (done) {
-    zlib.gzip(buf, done)
-  }
-}
-
 module.exports = function staticCache(dir, options, files) {
   if (typeof dir === 'object') {
     options = dir
@@ -155,5 +143,17 @@ module.exports = function staticCache(dir, options, files) {
         this.set('Allow', 'HEAD,GET,OPTIONS')
         return
     }
+  }
+}
+
+var stat = function (file) {
+  return function (done) {
+    fs.stat(file, done)
+  }
+}
+
+function gzip(buf) {
+  return function (done) {
+    zlib.gzip(buf, done)
   }
 }
