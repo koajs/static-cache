@@ -272,6 +272,29 @@ describe('Static Cache', function () {
     })
   })
 
+  it('should not serve files with gzip buffer when accept encoding not include gzip',
+  function (done) {
+    var index = fs.readFileSync('index.js')
+    request(server3)
+    .get('/index.js')
+    .set('Accept-Encoding', '')
+    .expect(200)
+    .expect('Cache-Control', 'public, max-age=0')
+    .expect('Content-Type', /javascript/)
+    .expect('Content-Length', index.length)
+    .expect('Vary', 'Accept-Encoding')
+    .expect(index.toString())
+    .end(function (err, res) {
+      if (err)
+        return done(err)
+      res.should.not.have.header('Content-Encoding')
+      res.should.have.header('Content-Length')
+      res.should.have.header('Last-Modified')
+      res.should.have.header('ETag')
+      done()
+    })
+  })
+
   it('should serve files with gzip stream', function (done) {
     var index = fs.readFileSync('index.js')
     zlib.gzip(index, function (err, content) {

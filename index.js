@@ -90,15 +90,21 @@ module.exports = function staticCache(dir, options, files) {
         if (this.method === 'HEAD')
           return
 
+        var acceptGzip = this.acceptsEncodings('gzip') === 'gzip';
+
         if (file.zipBuffer) {
-          this.set('Content-Encoding', 'gzip')
-          this.body = file.zipBuffer
+          if (acceptGzip) {
+            this.set('Content-Encoding', 'gzip')
+            this.body = file.zipBuffer
+          } else {
+            this.body = file.buffer
+          }
           return
         }
 
         var shouldGzip = enableGzip
           && file.length > 1024
-          && this.acceptsEncodings('gzip') === 'gzip'
+          && acceptGzip
           && compressible(file.type)
 
         if (file.buffer) {
