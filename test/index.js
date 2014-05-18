@@ -46,9 +46,10 @@ for (var key in files4) {
 var server4 = http.createServer(app4.callback())
 
 var app5 = koa()
-app5.use(staticCache(path.join(__dirname, '..'), {
+app5.use(staticCache({
   buffer: true,
-  prefix: '/static'
+  prefix: '/static',
+  dir: path.join(__dirname, '..')
 }))
 var server5 = http.createServer(app5.callback())
 

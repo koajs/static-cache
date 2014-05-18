@@ -10,8 +10,8 @@ var debug = require('debug')('koa-static-cache')
 
 module.exports = function staticCache(dir, options, files) {
   if (typeof dir === 'object') {
-    options = dir
     files = options
+    options = dir
     dir = null
   }
 
