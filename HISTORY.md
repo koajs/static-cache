@@ -1,4 +1,11 @@
 
+1.0.10 / 2014-05-18
+==================
+
+  * bump fs-readdir-recursive, fixed #14
+  * fix bad argument handling, fixed #20
+  * should not return gzip buffer when accept encoding not include gzip
+
 1.0.9 / 2014-03-31
 ==================
 
