@@ -44,14 +44,11 @@
     "fs-readdir-recursive": ">=0.0.2",
     "debug": "*"
   },
-  "peerDependencies": {
-    "koa": ">= 0.2.0"
-  },
   "devDependencies": {
-    "koa": "*",
+    "koa": "~0.6.2",
     "mocha": "*",
-    "should": "*",
-    "supertest": "*"
+    "should": "~3.3.2",
+    "supertest": "~0.13.0"
   },
   "scripts": {
     "test": "make test"
