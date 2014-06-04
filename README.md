@@ -1,4 +1,4 @@
-# Koa Static Cache [![Build Status](https://travis-ci.org/koajs/static-cache.png)](https://travis-ci.org/koajs/static-cache)
+# Koa Static Cache [![Build Status](https://travis-ci.org/koajs/static-cache.svg)](https://travis-ci.org/koajs/static-cache)
 
 Static server for koa.
 
