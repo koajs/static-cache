@@ -38,14 +38,13 @@
     "url": "https://github.com/koajs/static-cache/issues"
   },
   "dependencies": {
-    "finished": "~1.1.1",
-    "mime": "~1.2.11",
+    "mime-types": "~1.0.1",
     "compressible": "~1.1.0",
     "fs-readdir-recursive": ">=0.0.2",
     "debug": "*"
   },
   "devDependencies": {
-    "koa": "~0.6.2",
+    "koa": "~0.8.0",
     "mocha": "*",
     "should": "~3.3.2",
     "supertest": "~0.13.0"

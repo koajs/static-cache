@@ -2,9 +2,8 @@ var crypto = require('crypto')
 var fs = require('fs')
 var zlib = require('zlib')
 var path = require('path')
-var mime = require('mime')
+var mime = require('mime-types')
 var compressible = require('compressible')
-var onFinished = require('finished')
 var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
 
@@ -31,7 +30,7 @@ module.exports = function staticCache(dir, options, files) {
 
     obj.cacheControl = options.cacheControl
     obj.maxAge = options.maxAge || 0
-    obj.type = obj.mime = mime.lookup(pathname)
+    obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
     obj.mtime = stats.mtime.toUTCString()
     obj.length = stats.size
     obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
@@ -119,7 +118,6 @@ module.exports = function staticCache(dir, options, files) {
         }
 
         var stream = fs.createReadStream(file.path)
-        stream.on('error', this.onerror)
 
         // update file hash
         if (!file.md5) {
@@ -130,15 +128,13 @@ module.exports = function staticCache(dir, options, files) {
           })
         }
 
+        this.body = stream
         // enable gzip will remove content length
         if (shouldGzip) {
           this.remove('Content-Length')
           this.set('Content-Encoding', 'gzip')
           this.body = stream.pipe(zlib.createGzip())
-        } else {
-          this.body = stream
         }
-        onFinished(this, stream.destroy.bind(stream))
         return
       case 'OPTIONS':
         this.status = 204
