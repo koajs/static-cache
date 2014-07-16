@@ -1,4 +1,10 @@
 
+1.1.0 / 2014-07-16
+==================
+
+  * replace mime by mime-types
+  * remove onerror and destroy, let koa hanlde these stuff
+
 1.0.10 / 2014-05-18
 ==================
 
