@@ -8,17 +8,21 @@
     "url": "http://jongleberry.com",
     "twitter": "https://twitter.com/jongleberry"
   },
-  "contributors": [{
-    "name": "Jeremiah Senkpiel",
-    "email": "fishrock123@rocketmail.com",
-    "url": "https://searchbeam.jit.su",
-    "twitter": "https://twitter.com/fishrock123"
-  }, {
-    "name": "dead_horse",
-    "email": "dead_horse@qq.com",
-    "url": "http://deadhorse.me",
-    "twitter": "https://twitter.com/deadhorse_busi"
-  }],
+  "contributors": [
+    {
+      "name": "Jeremiah Senkpiel",
+      "email": "fishrock123@rocketmail.com",
+      "url": "https://searchbeam.jit.su",
+      "twitter": "https://twitter.com/fishrock123"
+    },
+    {
+      "name": "dead_horse",
+      "email": "dead_horse@qq.com",
+      "url": "http://deadhorse.me",
+      "twitter": "https://twitter.com/deadhorse_busi"
+    }
+  ],
+  "files": ["index.js"],
   "keywords": [
     "koa",
     "middleware",
@@ -44,6 +48,7 @@
     "debug": "*"
   },
   "devDependencies": {
+    "istanbul-harmony": "~0.3.0",
     "koa": "~0.8.0",
     "mocha": "*",
     "should": "~3.3.2",

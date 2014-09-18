@@ -1,4 +1,18 @@
-# Koa Static Cache [![Build Status](https://travis-ci.org/koajs/static-cache.svg)](https://travis-ci.org/koajs/static-cache)
+# Koa Static Cache
+
+[![NPM version][npm-image]][npm-url]
+[![build status][travis-image]][travis-url]
+[![Test coverage][coveralls-image]][coveralls-url]
+[![David deps][david-image]][david-url]
+
+[npm-image]: https://img.shields.io/npm/v/koa-static-cache.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/koa-static-cache
+[travis-image]: https://img.shields.io/travis/koajs/static-cache.svg?style=flat-square
+[travis-url]: https://travis-ci.org/koajs/static-cache
+[coveralls-image]: https://img.shields.io/coveralls/koajs/static-cache.svg?style=flat-square
+[coveralls-url]: https://coveralls.io/r/koajs/static-cache?branch=master
+[david-image]: https://img.shields.io/david/koajs/static-cache.svg?style=flat-square
+[david-url]: https://david-dm.org/koajs/static-cache
 
 Static server for koa.
 
