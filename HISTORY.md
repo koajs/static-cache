@@ -1,4 +1,10 @@
 
+1.2.0 / 2014-09-18
+==================
+
+  * bump compressible and mime-types
+  * decodeURI when use this.path as key to fetch value from files object
+
 1.1.0 / 2014-07-16
 ==================
 
