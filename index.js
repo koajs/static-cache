@@ -55,7 +55,7 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   return function* staticCache(next) {
-    var file = files[this.path]
+    var file = files[safeDecodeURIComponent(this.path)]
     if (!file)
       return yield* next
 
@@ -157,5 +157,13 @@ var stat = function (file) {
 function gzip(buf) {
   return function (done) {
     zlib.gzip(buf, done)
+  }
+}
+
+function safeDecodeURIComponent(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch (e) {
+    return text;
   }
 }
