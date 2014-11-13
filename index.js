@@ -60,6 +60,10 @@ module.exports = function staticCache(dir, options, files) {
       return yield* next
 
     switch (this.method) {
+      case 'POST':
+      case 'PUT':
+      case 'DELETE':
+        return yield* next
       case 'HEAD':
       case 'GET':
         this.status = 200
