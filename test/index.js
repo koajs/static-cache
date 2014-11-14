@@ -185,11 +185,11 @@ describe('Static Cache', function () {
     .expect('', done)
   })
 
-  it('should support 405 Method Not Allowed', function (done) {
+  it('should support 404 Not Found for other Methods to allow downstream', 
+  function (done) {
     request(server)
     .put('/index.js')
-    .expect('Allow', 'HEAD,GET,OPTIONS')
-    .expect(405, done)
+    .expect(404, done)
   })
 
   it('should ignore query strings', function (done) {

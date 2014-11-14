@@ -141,9 +141,7 @@ module.exports = function staticCache(dir, options, files) {
         this.set('Allow', 'HEAD,GET,OPTIONS')
         return
       default:
-        this.status = 405
-        this.set('Allow', 'HEAD,GET,OPTIONS')
-        return
+        return yield* next
     }
   }
 }
