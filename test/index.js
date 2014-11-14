@@ -177,15 +177,7 @@ describe('Static Cache', function () {
     .expect('', done)
   })
 
-  it('should support OPTIONS', function (done) {
-    request(server)
-    .options('/index.js')
-    .expect('Allow', 'HEAD,GET,OPTIONS')
-    .expect(204)
-    .expect('', done)
-  })
-
-  it('should support 404 Not Found for other Methods to allow downstream', 
+  it('should support 404 Not Found for other Methods to allow downstream',
   function (done) {
     request(server)
     .put('/index.js')

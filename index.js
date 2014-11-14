@@ -59,89 +59,80 @@ module.exports = function staticCache(dir, options, files) {
     if (!file)
       return yield* next
 
-    switch (this.method) {
-      case 'HEAD':
-      case 'GET':
-        this.status = 200
+    if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
 
-        if (enableGzip) this.vary('Accept-Encoding')
+    this.status = 200
 
-        if (!file.buffer) {
-          var stats = yield stat(file.path)
-          if (stats.mtime > new Date(file.mtime)) {
-            file.mtime = stats.mtime.toUTCString()
-            file.md5 = null
-            file.length = stats.size
-          }
-        }
+    if (enableGzip) this.vary('Accept-Encoding')
 
-        this.response.lastModified = file.mtime
-        if (file.md5) this.response.etag = file.md5
+    if (!file.buffer) {
+      var stats = yield stat(file.path)
+      if (stats.mtime > new Date(file.mtime)) {
+        file.mtime = stats.mtime.toUTCString()
+        file.md5 = null
+        file.length = stats.size
+      }
+    }
 
-        if (this.fresh)
-          return this.status = 304
+    this.response.lastModified = file.mtime
+    if (file.md5) this.response.etag = file.md5
 
-        this.type = file.type
-        this.length = file.zipBuffer ? file.zipBuffer.length : file.length
-        this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
-        if (file.md5) this.set('Content-MD5', file.md5)
+    if (this.fresh)
+      return this.status = 304
 
-        if (this.method === 'HEAD')
-          return
+    this.type = file.type
+    this.length = file.zipBuffer ? file.zipBuffer.length : file.length
+    this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
+    if (file.md5) this.set('Content-MD5', file.md5)
 
-        var acceptGzip = this.acceptsEncodings('gzip') === 'gzip';
+    if (this.method === 'HEAD')
+      return
 
-        if (file.zipBuffer) {
-          if (acceptGzip) {
-            this.set('Content-Encoding', 'gzip')
-            this.body = file.zipBuffer
-          } else {
-            this.body = file.buffer
-          }
-          return
-        }
+    var acceptGzip = this.acceptsEncodings('gzip') === 'gzip';
 
-        var shouldGzip = enableGzip
-          && file.length > 1024
-          && acceptGzip
-          && compressible(file.type)
+    if (file.zipBuffer) {
+      if (acceptGzip) {
+        this.set('Content-Encoding', 'gzip')
+        this.body = file.zipBuffer
+      } else {
+        this.body = file.buffer
+      }
+      return
+    }
 
-        if (file.buffer) {
-          if (shouldGzip) {
-            file.zipBuffer = yield gzip(file.buffer)
-            this.set('Content-Encoding', 'gzip')
-            this.body = file.zipBuffer
-          } else {
-            this.body = file.buffer
-          }
-          return
-        }
+    var shouldGzip = enableGzip
+      && file.length > 1024
+      && acceptGzip
+      && compressible(file.type)
 
-        var stream = fs.createReadStream(file.path)
+    if (file.buffer) {
+      if (shouldGzip) {
+        file.zipBuffer = yield gzip(file.buffer)
+        this.set('Content-Encoding', 'gzip')
+        this.body = file.zipBuffer
+      } else {
+        this.body = file.buffer
+      }
+      return
+    }
 
-        // update file hash
-        if (!file.md5) {
-          var hash = crypto.createHash('md5')
-          stream.on('data', hash.update.bind(hash))
-          stream.on('end', function () {
-            file.md5 = hash.digest('base64')
-          })
-        }
+    var stream = fs.createReadStream(file.path)
 
-        this.body = stream
-        // enable gzip will remove content length
-        if (shouldGzip) {
-          this.remove('Content-Length')
-          this.set('Content-Encoding', 'gzip')
-          this.body = stream.pipe(zlib.createGzip())
-        }
-        return
-      case 'OPTIONS':
-        this.status = 204
-        this.set('Allow', 'HEAD,GET,OPTIONS')
-        return
-      default:
-        return yield* next
+    // update file hash
+    if (!file.md5) {
+      var hash = crypto.createHash('md5')
+      stream.on('data', hash.update.bind(hash))
+      stream.on('end', function () {
+        file.md5 = hash.digest('base64')
+      })
+    }
+
+    this.body = stream
+    // enable gzip will remove content length
+    if (shouldGzip) {
+      this.remove('Content-Length')
+      this.set('Content-Encoding', 'gzip')
+      this.body = stream.pipe(zlib.createGzip())
     }
   }
 }
