@@ -55,7 +55,7 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   return function* staticCache(next) {
-    var file = files[safeDecodeURIComponent(this.path)]
+    var file = files[safeDecodeURIComponent(path.normalize(this.path))]
     if (!file)
       return yield* next
 
