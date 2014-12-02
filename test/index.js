@@ -77,6 +77,17 @@ describe('Static Cache', function () {
     .expect(200, done)
   })
 
+  it('should accept abnormal path', function (done) {
+    var app = koa()
+    app.use(staticCache({
+      dir: path.join(__dirname, '..')
+    }))
+    var server = app.listen()
+    request(server)
+    .get('//index.js')
+    .expect(200, done)
+  })
+
   it('should default process.cwd() works fine', function (done) {
     var app = koa()
     app.use(staticCache())
