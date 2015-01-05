@@ -21,7 +21,6 @@ module.exports = function staticCache(dir, options, files) {
   var enableGzip = !!options.gzip
 
   readDir(dir).forEach(function (name) {
-    name = name.replace(/\\/g, '/')
     var pathname = options.prefix + name
     var obj = files[pathname] = {}
     var filename = obj.path = path.join(dir, name)
