@@ -21,24 +21,7 @@ module.exports = function staticCache(dir, options, files) {
   var enableGzip = !!options.gzip
 
   readDir(dir).forEach(function (name) {
-    var pathname = options.prefix + name
-    var obj = files[pathname] = {}
-    var filename = obj.path = path.join(dir, name)
-    var stats = fs.statSync(filename)
-    var buffer = fs.readFileSync(filename)
-
-    obj.cacheControl = options.cacheControl
-    obj.maxAge = options.maxAge || 0
-    obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
-    obj.mtime = stats.mtime.toUTCString()
-    obj.length = stats.size
-    obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
-
-    debug('file: ' + JSON.stringify(obj, null, 2))
-    if (options.buffer)
-      obj.buffer = buffer
-
-    buffer = null
+    loadFile(name, dir, options, files)
   })
 
   if (options.alias) {
@@ -54,9 +37,25 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   return function* staticCache(next) {
-    var file = files[safeDecodeURIComponent(path.normalize(this.path))]
-    if (!file)
-      return yield* next
+    var filename = safeDecodeURIComponent(path.normalize(this.path))
+    var file = files[filename]
+    if (!file) {
+      // hidden file
+      if (path.basename(filename)[0] === '.') return yield* next
+
+      var isExists = yield exists(path.join(dir, filename))
+      if (!isExists)
+        return yield* next
+
+      file = loadFile(filename, dir, options, files)
+    }
+
+    // when buffer to be false, load file every request
+    if (options.buffer === false) {
+      this.type = file.type
+      this.status = 200
+      return this.body = fs.createReadStream(file.path)
+    }
 
     if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
 
@@ -154,4 +153,35 @@ function safeDecodeURIComponent(text) {
   } catch (e) {
     return text;
   }
+}
+
+function exists(filename) {
+  return function (done) {
+    fs.exists(filename, function(exists) {
+      done(null, exists)
+    })
+  }
+}
+
+// load file and add file content to cache
+function loadFile(name, dir, options, files) {
+  var pathname = options.prefix + name
+  var obj = files[pathname] = {}
+  var filename = obj.path = path.join(dir, name)
+  var stats = fs.statSync(filename)
+  var buffer = fs.readFileSync(filename)
+
+  obj.cacheControl = options.cacheControl
+  obj.maxAge = options.maxAge || 0
+  obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
+  obj.mtime = stats.mtime.toUTCString()
+  obj.length = stats.size
+  obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
+
+  debug('file: ' + JSON.stringify(obj, null, 2))
+  if (options.buffer)
+    obj.buffer = buffer
+
+  buffer = null
+  return obj
 }
