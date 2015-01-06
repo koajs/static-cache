@@ -1,4 +1,12 @@
 
+3.0.0 / 2015-01-06 
+==================
+
+  * fix(test): typo
+  * fix(buffer): keep the old logic of treat unbuffered file
+  * feat: add opt.buffer false to serve file not cache at all
+  * fix: support load file dynamic, close #30
+
 2.0.2 / 2015-01-05
 ==================
 
