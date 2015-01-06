@@ -1,5 +1,11 @@
 
-3.0.0 / 2015-01-06 
+3.0.1 / 2015-01-06
+==================
+
+  * feat(dynamic): add dynamic option to support dynamic load
+  * fix(dynamic): use stat to detect folder
+
+3.0.0 / 2015-01-06
 ==================
 
   * fix(test): typo
