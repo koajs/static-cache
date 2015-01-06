@@ -353,7 +353,7 @@ describe('Static Cache', function () {
       })
   })
 
-  it('should work fine when new file added', function (done) {
+  it('should work fine when file not exist', function (done) {
     var app = koa()
     app.use(staticCache())
     var server = app.listen()
