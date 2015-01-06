@@ -54,8 +54,7 @@ module.exports = function staticCache(dir, options, files) {
     if (options.buffer === false) {
       this.type = file.type
       this.status = 200
-      var stream = fs.createReadStream(file.path)
-      return this.body = stream;
+      return this.body = fs.createReadStream(file.path)
     }
 
     if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
