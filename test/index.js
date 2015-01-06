@@ -367,4 +367,28 @@ describe('Static Cache', function () {
       .get('/a.js')
       .expect(404, done)
   })
+
+  it('should not cache when options.buffer to be false', function (done) {
+    var app = koa()
+    app.use(staticCache(path.join(__dirname, '..'), { buffer: false }))
+    var server = app.listen()
+    request(server)
+      .get('/index.js')
+      .expect(200)
+      .end(function (err, res) {
+        if (err)
+          return done(err)
+
+        res.should.not.have.header('Last-Modified')
+        res.should.not.have.header('ETag')
+
+        next();
+      })
+
+    function next() {
+      request(server)
+        .get('/index.js')
+        .expect(200, done);
+    }
+  })
 })
