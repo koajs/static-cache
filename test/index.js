@@ -339,32 +339,69 @@ describe('Static Cache', function () {
     })
   })
 
-  it('should work fine when new file added', function (done) {
+  it('should 404 when dynamic = false', function (done) {
     var app = koa()
-    app.use(staticCache())
+    app.use(staticCache({dynamic: false}))
     var server = app.listen()
     fs.writeFileSync('a.js', 'hello world');
 
     request(server)
       .get('/a.js')
-      .expect(200, function() {
+      .expect(404, function(err) {
         fs.unlinkSync('a.js')
-        done()
+        done(err)
       })
   })
 
-  it('should 404 when file not exist', function (done) {
+  it('should work fine when new file added in dynamic mode', function (done) {
     var app = koa()
-    app.use(staticCache())
+    app.use(staticCache({dynamic: true}))
+    var server = app.listen()
+    fs.writeFileSync('a.js', 'hello world');
+
+    request(server)
+      .get('/a.js')
+      .expect(200, function(err) {
+        fs.unlinkSync('a.js')
+        done(err)
+      })
+  })
+
+  it('should 404 when new hidden file added in dynamic mode', function (done) {
+    var app = koa()
+    app.use(staticCache({dynamic: true}))
+    var server = app.listen()
+    fs.writeFileSync('.a.js', 'hello world');
+
+    request(server)
+      .get('/.a.js')
+      .expect(404, function(err) {
+        fs.unlinkSync('.a.js')
+        done(err)
+      })
+  })
+
+  it('should 404 when file not exist in dynamic mode', function (done) {
+    var app = koa()
+    app.use(staticCache({dynamic: true}))
     var server = app.listen()
     request(server)
       .get('/a.js')
       .expect(404, done)
   })
 
-  it('should 404 when is folder', function (done) {
+  it('should 404 when file not exist', function (done) {
     var app = koa()
-    app.use(staticCache())
+    app.use(staticCache({dynamic: true}))
+    var server = app.listen()
+    request(server)
+      .get('/a.js')
+      .expect(404, done)
+  })
+
+  it('should 404 when is folder in dynamic mode', function (done) {
+    var app = koa()
+    app.use(staticCache({dynamic: true}))
     var server = app.listen()
     request(server)
       .get('/test')

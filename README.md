@@ -51,6 +51,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.alias` (obj) - object map of aliases. See below.
 - `options.prefix` (str) - the url prefix you wish to add, default to `''`.
 - `files` (obj) - optional files object. See below.
+- `dynamic` (bool) - dynamic load file which not cached on initialization.
 
 ### Aliases
 

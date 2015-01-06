@@ -48,9 +48,8 @@ module.exports = function staticCache(dir, options, files) {
 
     // try to load file
     if (!file) {
-      // hidden file
+      if (!options.dynamic) return yield* next
       if (path.basename(filename)[0] === '.') return yield* next
-
       try {
         var s = yield stat(path.join(dir, filename))
         if (!s.isFile()) return yield* next
