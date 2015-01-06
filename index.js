@@ -37,27 +37,25 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   return function* staticCache(next) {
+    // only accept HEAD and GET
+    if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
+
+    // decode for `/%E4%B8%AD%E6%96%87`
+    // normalize for `//index`
     var filename = safeDecodeURIComponent(path.normalize(this.path))
+
     var file = files[filename]
+
+    // try to load file
     if (!file) {
       // hidden file
       if (path.basename(filename)[0] === '.') return yield* next
 
       var isExists = yield exists(path.join(dir, filename))
-      if (!isExists)
-        return yield* next
+      if (!isExists) return yield* next
 
       file = loadFile(filename, dir, options, files)
     }
-
-    // when buffer to be false, load file every request
-    if (options.buffer === false) {
-      this.type = file.type
-      this.status = 200
-      return this.body = fs.createReadStream(file.path)
-    }
-
-    if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
 
     this.status = 200
 
@@ -163,7 +161,17 @@ function exists(filename) {
   }
 }
 
-// load file and add file content to cache
+/**
+ * load file and add file content to cache
+ *
+ * @param {String} name
+ * @param {String} dir
+ * @param {Object} options
+ * @param {Object} files
+ * @return {Object}
+ * @api private
+ */
+
 function loadFile(name, dir, options, files) {
   var pathname = options.prefix + name
   var obj = files[pathname] = {}
