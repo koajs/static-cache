@@ -51,8 +51,12 @@ module.exports = function staticCache(dir, options, files) {
       // hidden file
       if (path.basename(filename)[0] === '.') return yield* next
 
-      var isExists = yield exists(path.join(dir, filename))
-      if (!isExists) return yield* next
+      try {
+        var s = yield stat(path.join(dir, filename))
+        if (!s.isFile()) return yield* next
+      } catch (err) {
+        return yield* next
+      }
 
       file = loadFile(filename, dir, options, files)
     }
@@ -150,14 +154,6 @@ function safeDecodeURIComponent(text) {
     return decodeURIComponent(text);
   } catch (e) {
     return text;
-  }
-}
-
-function exists(filename) {
-  return function (done) {
-    fs.exists(filename, function(exists) {
-      done(null, exists)
-    })
   }
 }
 

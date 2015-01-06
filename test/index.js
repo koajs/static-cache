@@ -353,12 +353,21 @@ describe('Static Cache', function () {
       })
   })
 
-  it('should work fine when file not exist', function (done) {
+  it('should 404 when file not exist', function (done) {
     var app = koa()
     app.use(staticCache())
     var server = app.listen()
     request(server)
       .get('/a.js')
+      .expect(404, done)
+  })
+
+  it('should 404 when is folder', function (done) {
+    var app = koa()
+    app.use(staticCache())
+    var server = app.listen()
+    request(server)
+      .get('/test')
       .expect(404, done)
   })
 })
