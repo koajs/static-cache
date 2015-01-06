@@ -50,6 +50,13 @@ module.exports = function staticCache(dir, options, files) {
       file = loadFile(filename, dir, options, files)
     }
 
+    // when buffer to be false, load file every request
+    if (options.buffer === false) {
+      this.type = file.type
+      this.status = 200
+      return this.body = fs.createReadStream(file.path)
+    }
+
     if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
 
     this.status = 200
@@ -158,7 +165,6 @@ function exists(filename) {
 
 // load file and add file content to cache
 function loadFile(name, dir, options, files) {
-  name = name.replace(/\\/g, '/')
   var pathname = options.prefix + name
   var obj = files[pathname] = {}
   var filename = obj.path = path.join(dir, name)
