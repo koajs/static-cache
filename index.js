@@ -19,8 +19,11 @@ module.exports = function staticCache(dir, options, files) {
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
+  var filterLoadFilesFn = (typeof options.filter === 'function') ? options.filter : function (file) {return true;}
+  filterLoadFilesFn = (Array.isArray(options.filter)) ? function (file) {return options.filter.indexOf(file) !== -1} : filterLoadFilesFn
 
-  readDir(dir).forEach(function (name) {
+  readDir(dir).filter(filterLoadFilesFn).forEach(function (name) {
+    console.log('name', name);
     loadFile(name, dir, options, files)
   })
 
