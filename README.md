@@ -22,6 +22,7 @@ Differences between this library and other libraries such as [static](https://gi
 - You may optionally store the data in memory - it streams by default.
 - Caches the assets on initialization - you need to restart the process to update the assets.
 - Uses MD5 hash sum as an ETag.
+- Uses .gz files if present on disk, like nginx gzip_static module
 
 ## Installation
 

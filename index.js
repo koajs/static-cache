@@ -106,7 +106,13 @@ module.exports = function staticCache(dir, options, files) {
 
     if (file.buffer) {
       if (shouldGzip) {
-        file.zipBuffer = yield gzip(file.buffer)
+
+        var gzFile = files[filename + '.gz'];
+        if (gzFile && gzFile.buffer) { // if .gz file already read from disk
+          file.zipBuffer = gzFile.buffer
+        } else {
+          file.zipBuffer = yield gzip(file.buffer)
+        }
         this.set('Content-Encoding', 'gzip')
         this.body = file.zipBuffer
       } else {
