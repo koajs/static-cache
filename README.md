@@ -52,7 +52,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.prefix` (str) - the url prefix you wish to add, default to `''`.
 - `files` (obj) - optional files object. See below.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.
-- `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listened files
+- `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listed files
 
 ### Aliases
 
