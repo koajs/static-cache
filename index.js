@@ -174,13 +174,13 @@ function safeDecodeURIComponent(text) {
 
 function loadFile(name, dir, options, files) {
   var pathname = options.prefix + name
-  var obj = files[pathname] = {}
+  var obj = files[pathname] = files[pathname] ? files[pathname] : {}
   var filename = obj.path = path.join(dir, name)
   var stats = fs.statSync(filename)
   var buffer = fs.readFileSync(filename)
 
   obj.cacheControl = options.cacheControl
-  obj.maxAge = options.maxAge || 0
+  obj.maxAge = obj.maxAge ? obj.maxAge : options.maxAge || 0
   obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
   obj.mtime = stats.mtime.toUTCString()
   obj.length = stats.size
