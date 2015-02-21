@@ -407,4 +407,28 @@ describe('Static Cache', function () {
       .get('/test')
       .expect(404, done)
   })
+
+  it('should array options.filter works fine', function (done) {
+    var app = koa()
+    app.use(staticCache({
+      dir: path.join(__dirname, '..'),
+      filter: ['index.js']
+    }))
+    var server = app.listen()
+    request(server)
+    .get('/Makefile')
+    .expect(404, done)
+  })
+
+  it('should function options.filter works fine', function (done) {
+    var app = koa()
+    app.use(staticCache({
+      dir: path.join(__dirname, '..'),
+      filter: function (file) { return file.indexOf('index.js') === 0 }
+    }))
+    var server = app.listen()
+    request(server)
+    .get('/Makefile')
+    .expect(404, done)
+  })
 })
