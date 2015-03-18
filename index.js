@@ -15,7 +15,7 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   options = options || {}
-  options.prefix = (options.prefix || '').replace(/\/$/, '') + '/'
+  options.prefix = (options.prefix || '').replace(/\/$/, '') + path.sep
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
