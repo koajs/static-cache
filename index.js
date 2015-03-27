@@ -55,6 +55,7 @@ module.exports = function staticCache(dir, options, files) {
     if (!file) {
       if (!options.dynamic) return yield* next
       if (path.basename(filename)[0] === '.') return yield* next
+      if (filename.charAt(0) === path.sep) filename = filename.slice(1)
       try {
         var s = yield stat(path.join(dir, filename))
         if (!s.isFile()) return yield* next
