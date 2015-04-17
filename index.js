@@ -180,7 +180,7 @@ function safeDecodeURIComponent(text) {
  */
 
 function loadFile(name, dir, options, files) {
-  var pathname = options.prefix + name
+  var pathname = path.normalize(path.join(options.prefix, name))
   var obj = files[pathname] = files[pathname] ? files[pathname] : {}
   var filename = obj.path = path.join(dir, name)
   var stats = fs.statSync(filename)
