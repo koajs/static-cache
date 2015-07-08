@@ -19,6 +19,7 @@ module.exports = function staticCache(dir, options, files) {
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
+  var filePrefix = path.normalize(options.prefix).replace(/^\//, '')
 
   // option.filter
   var fileFilter = function () { return true }
@@ -57,11 +58,10 @@ module.exports = function staticCache(dir, options, files) {
       if (path.basename(filename)[0] === '.') return yield* next
       if (filename.charAt(0) === path.sep) filename = filename.slice(1)
 
+      // trim prefix
       if (options.prefix !== path.sep) {
-        var prefix = path.normalize(options.prefix)
-        if (prefix.charAt(0) === path.sep) prefix = prefix.slice(1)
-        if (filename.indexOf(prefix) !== 0) return yield* next
-        filename = filename.slice(prefix.length)
+        if (filename.indexOf(filePrefix) !== 0) return yield* next
+        filename = filename.slice(filePrefix.length)
       }
 
       try {
