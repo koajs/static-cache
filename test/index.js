@@ -367,6 +367,34 @@ describe('Static Cache', function () {
       })
   })
 
+  it('should work fine when new file added in dynamic and prefix mode', function (done) {
+    var app = koa()
+    app.use(staticCache({dynamic: true, prefix: '/static'}))
+    var server = app.listen()
+    fs.writeFileSync('a.js', 'hello world');
+
+    request(server)
+      .get('/static/a.js')
+      .expect(200, function(err) {
+        fs.unlinkSync('a.js')
+        done(err)
+      })
+  })
+
+  it('should 404 when url without prefix in dynamic and prefix mode', function (done) {
+    var app = koa()
+    app.use(staticCache({dynamic: true, prefix: '/static'}))
+    var server = app.listen()
+    fs.writeFileSync('a.js', 'hello world');
+
+    request(server)
+      .get('/a.js')
+      .expect(404, function(err) {
+        fs.unlinkSync('a.js')
+        done(err)
+      })
+  })
+
   it('should 404 when new hidden file added in dynamic mode', function (done) {
     var app = koa()
     app.use(staticCache({dynamic: true}))
