@@ -17,7 +17,7 @@ app.use(staticCache(path.join(__dirname, '..'), {
 
 // force the files' mtime
 for (var key in files) {
-  files[key].mtime = new Date().toUTCString()
+  files[key].mtime = new Date()
 }
 var server = http.createServer(app.callback())
 
@@ -41,7 +41,7 @@ app4.use(staticCache(path.join(__dirname, '..'), {
 }, files4))
 // force the files' mtime
 for (var key in files4) {
-  files4[key].mtime = new Date().toUTCString()
+  files4[key].mtime = new Date()
 }
 var server4 = http.createServer(app4.callback())
 
@@ -234,7 +234,7 @@ describe('Static Cache', function () {
         res.should.have.header('Content-Length')
         res.should.have.header('Last-Modified')
         res.should.not.have.header('ETag')
-        files['/README.md'].mtime.should.equal(mtime.toUTCString())
+        files['/README.md'].mtime.should.eql(mtime)
         setTimeout(function () {
           files['/README.md'].md5.should.equal(md5)
         }, 10)

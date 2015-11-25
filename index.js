@@ -80,8 +80,8 @@ module.exports = function staticCache(dir, options, files) {
 
     if (!file.buffer) {
       var stats = yield stat(file.path)
-      if (stats.mtime > new Date(file.mtime)) {
-        file.mtime = stats.mtime.toUTCString()
+      if (stats.mtime > file.mtime) {
+        file.mtime = stats.mtime
         file.md5 = null
         file.length = stats.size
       }
@@ -197,7 +197,7 @@ function loadFile(name, dir, options, files) {
   obj.cacheControl = options.cacheControl
   obj.maxAge = obj.maxAge ? obj.maxAge : options.maxAge || 0
   obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
-  obj.mtime = stats.mtime.toUTCString()
+  obj.mtime = stats.mtime
   obj.length = stats.size
   obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
 
