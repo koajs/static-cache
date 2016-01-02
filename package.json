@@ -22,7 +22,9 @@
       "twitter": "https://twitter.com/deadhorse_busi"
     }
   ],
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "keywords": [
     "koa",
     "middleware",
@@ -42,10 +44,11 @@
     "url": "https://github.com/koajs/static-cache/issues"
   },
   "dependencies": {
-    "mime-types": "~2.0.1",
     "compressible": "~2.0.0",
+    "debug": "*",
     "fs-readdir-recursive": ">=0.0.2",
-    "debug": "*"
+    "mime-types": "~2.0.1",
+    "mz": "~2.1.0"
   },
   "devDependencies": {
     "istanbul-harmony": "~0.3.0",

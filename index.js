@@ -1,6 +1,6 @@
 var crypto = require('crypto')
-var fs = require('fs')
-var zlib = require('zlib')
+var fs = require('mz/fs')
+var zlib = require('mz/zlib')
 var path = require('path')
 var mime = require('mime-types')
 var compressible = require('compressible')
@@ -65,7 +65,7 @@ module.exports = function staticCache(dir, options, files) {
       }
 
       try {
-        var s = yield stat(path.join(dir, filename))
+        var s = yield fs.stat(path.join(dir, filename))
         if (!s.isFile()) return yield* next
       } catch (err) {
         return yield* next
@@ -79,7 +79,7 @@ module.exports = function staticCache(dir, options, files) {
     if (enableGzip) this.vary('Accept-Encoding')
 
     if (!file.buffer) {
-      var stats = yield stat(file.path)
+      var stats = yield fs.stat(file.path)
       if (stats.mtime > file.mtime) {
         file.mtime = stats.mtime
         file.md5 = null
@@ -125,7 +125,7 @@ module.exports = function staticCache(dir, options, files) {
         if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { // if .gz file already read from disk
           file.zipBuffer = gzFile.buffer
         } else {
-          file.zipBuffer = yield gzip(file.buffer)
+          file.zipBuffer = yield zlib.gzip(file.buffer)
         }
         this.set('Content-Encoding', 'gzip')
         this.body = file.zipBuffer
@@ -153,18 +153,6 @@ module.exports = function staticCache(dir, options, files) {
       this.set('Content-Encoding', 'gzip')
       this.body = stream.pipe(zlib.createGzip())
     }
-  }
-}
-
-var stat = function (file) {
-  return function (done) {
-    fs.stat(file, done)
-  }
-}
-
-function gzip(buf) {
-  return function (done) {
-    zlib.gzip(buf, done)
   }
 }
 
