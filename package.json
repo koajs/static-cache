@@ -44,18 +44,19 @@
     "url": "https://github.com/koajs/static-cache/issues"
   },
   "dependencies": {
-    "compressible": "~2.0.0",
+    "compressible": "~2.0.6",
     "debug": "*",
-    "fs-readdir-recursive": ">=0.0.2",
-    "mime-types": "~2.0.1",
+    "fs-readdir-recursive": "~1.0.0",
+    "mime-types": "~2.1.8",
     "mz": "~2.1.0"
   },
   "devDependencies": {
-    "istanbul-harmony": "~0.3.0",
-    "koa": "~0.13.0",
-    "mocha": "~2.0.1",
-    "should": "~3.3.2",
-    "supertest": "~0.13.0"
+    "istanbul": "~0.4.1",
+    "koa": "1",
+    "mocha": "2",
+    "should": "8",
+    "should-http": "0.0.4",
+    "supertest": "1"
   },
   "scripts": {
     "test": "make test"

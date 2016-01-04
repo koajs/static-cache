@@ -1,6 +1,7 @@
 test:
 	@NODE_ENV=test ./node_modules/.bin/mocha \
 		--require should \
+		--require should-http \
 		--harmony \
 		--reporter spec \
 		--bail
@@ -11,6 +12,7 @@ test-cov:
 		./node_modules/.bin/_mocha \
 		-- -u exports \
 		--require should \
+		--require should-http \
 		--reporter spec \
 		--bail
 
@@ -21,6 +23,7 @@ test-travis:
 		--report lcovonly \
 		-- -u exports \
 		--require should \
+		--require should-http \
 		--reporter spec \
 		--bail
 
