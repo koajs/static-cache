@@ -19,7 +19,7 @@ module.exports = function staticCache(dir, options, files) {
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
-  var filePrefix = path.normalize(options.prefix).replace(/^\//, '')
+  var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
 
   // option.filter
   var fileFilter = function () { return true }
