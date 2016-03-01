@@ -51,6 +51,7 @@
     "mz": "~2.2.0"
   },
   "devDependencies": {
+    "bluebird": "3",
     "istanbul": "~0.4.1",
     "koa": "1",
     "mocha": "2",
