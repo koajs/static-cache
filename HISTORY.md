@@ -1,4 +1,9 @@
 
+3.1.5 / 2016-03-02
+==================
+
+  * fix: dynamic load file bug on windows platform
+
 3.1.4 / 2016-01-04
 ==================
 
