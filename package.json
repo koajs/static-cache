@@ -1,7 +1,7 @@
 {
   "name": "koa-static-cache",
   "description": "Static cache for koa",
-  "version": "3.1.5",
+  "version": "3.1.6",
   "author": {
     "name": "Jonathan Ong",
     "email": "me@jongleberry.com",
