@@ -44,7 +44,7 @@ module.exports = function staticCache(dir, options, files) {
 
   return function* staticCache(next) {
     // only accept HEAD and GET
-    if (this.method !== 'HEAD' && this.method !== 'GET') return yield* next;
+    if (this.method !== 'HEAD' && this.method !== 'GET') return yield next;
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
@@ -54,22 +54,23 @@ module.exports = function staticCache(dir, options, files) {
 
     // try to load file
     if (!file) {
-      if (!options.dynamic) return yield* next
-      if (path.basename(filename)[0] === '.') return yield* next
+      if (!options.dynamic) return yield next
+      if (path.basename(filename)[0] === '.') return yield next
       if (filename.charAt(0) === path.sep) filename = filename.slice(1)
 
       // trim prefix
       if (options.prefix !== path.sep) {
-        if (filename.indexOf(filePrefix) !== 0) return yield* next
+        if (filename.indexOf(filePrefix) !== 0) return yield next
         filename = filename.slice(filePrefix.length)
       }
 
+      var s
       try {
-        var s = yield fs.stat(path.join(dir, filename))
-        if (!s.isFile()) return yield* next
+        s = yield fs.stat(path.join(dir, filename))
       } catch (err) {
-        return yield* next
+        return yield next
       }
+      if (!s.isFile()) return yield next
 
       file = loadFile(filename, dir, options, files)
     }
