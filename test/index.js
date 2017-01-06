@@ -2,6 +2,7 @@ var fs = require('fs')
 var crypto = require('crypto')
 var zlib = require('zlib')
 var request = require('supertest')
+var should = require('should')
 var koa = require('koa')
 var http = require('http')
 var path = require('path')
@@ -343,7 +344,7 @@ describe('Static Cache', function () {
     var app = koa()
     app.use(staticCache({dynamic: false}))
     var server = app.listen()
-    fs.writeFileSync('a.js', 'hello world');
+    fs.writeFileSync('a.js', 'hello world')
 
     request(server)
       .get('/a.js')
@@ -357,7 +358,7 @@ describe('Static Cache', function () {
     var app = koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
-    fs.writeFileSync('a.js', 'hello world');
+    fs.writeFileSync('a.js', 'hello world')
 
     request(server)
       .get('/a.js')
@@ -371,7 +372,7 @@ describe('Static Cache', function () {
     var app = koa()
     app.use(staticCache({dynamic: true, prefix: '/static'}))
     var server = app.listen()
-    fs.writeFileSync('a.js', 'hello world');
+    fs.writeFileSync('a.js', 'hello world')
 
     request(server)
       .get('/static/a.js')
@@ -385,7 +386,7 @@ describe('Static Cache', function () {
     var app = koa()
     app.use(staticCache({dynamic: true, prefix: '/static'}))
     var server = app.listen()
-    fs.writeFileSync('a.js', 'hello world');
+    fs.writeFileSync('a.js', 'hello world')
 
     request(server)
       .get('/a.js')
@@ -399,7 +400,7 @@ describe('Static Cache', function () {
     var app = koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
-    fs.writeFileSync('.a.js', 'hello world');
+    fs.writeFileSync('.a.js', 'hello world')
 
     request(server)
       .get('/.a.js')
@@ -458,5 +459,24 @@ describe('Static Cache', function () {
     request(server)
     .get('/Makefile')
     .expect(404, done)
+  })
+
+  it('should options.dynamic and options.preload works fine', function (done) {
+    var app = koa()
+    var files = {}
+    app.use(staticCache({
+      dir: path.join(__dirname, '..'),
+      preload: false,
+      dynamic: true,
+      files: files
+    }))
+    files.should.eql({})
+    request(app.listen())
+      .get('/Makefile')
+      .expect(200, function (err, res) {
+        should.not.exist(err)
+        files.should.have.keys('/Makefile')
+        done()
+      })
   })
 })

@@ -26,9 +26,11 @@ module.exports = function staticCache(dir, options, files) {
   if (Array.isArray(options.filter)) fileFilter = function (file) { return ~options.filter.indexOf(file) }
   if (typeof options.filter === 'function') fileFilter = options.filter
 
-  readDir(dir).filter(fileFilter).forEach(function (name) {
-    loadFile(name, dir, options, files)
-  })
+  if (options.preload !== false) {
+    readDir(dir).filter(fileFilter).forEach(function (name) {
+      loadFile(name, dir, options, files)
+    })
+  }
 
   if (options.alias) {
     Object.keys(options.alias).forEach(function (key) {
@@ -44,7 +46,7 @@ module.exports = function staticCache(dir, options, files) {
 
   return function* staticCache(next) {
     // only accept HEAD and GET
-    if (this.method !== 'HEAD' && this.method !== 'GET') return yield next;
+    if (this.method !== 'HEAD' && this.method !== 'GET') return yield next
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
@@ -102,7 +104,7 @@ module.exports = function staticCache(dir, options, files) {
     if (this.method === 'HEAD')
       return
 
-    var acceptGzip = this.acceptsEncodings('gzip') === 'gzip';
+    var acceptGzip = this.acceptsEncodings('gzip') === 'gzip'
 
     if (file.zipBuffer) {
       if (acceptGzip) {
@@ -122,7 +124,7 @@ module.exports = function staticCache(dir, options, files) {
     if (file.buffer) {
       if (shouldGzip) {
 
-        var gzFile = files[filename + '.gz'];
+        var gzFile = files[filename + '.gz']
         if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { // if .gz file already read from disk
           file.zipBuffer = gzFile.buffer
         } else {
@@ -159,9 +161,9 @@ module.exports = function staticCache(dir, options, files) {
 
 function safeDecodeURIComponent(text) {
   try {
-    return decodeURIComponent(text);
+    return decodeURIComponent(text)
   } catch (e) {
-    return text;
+    return text
   }
 }
 
