@@ -20,7 +20,7 @@ Differences between this library and other libraries such as [static](https://gi
 
 - There is no directory or `index.html` support.
 - You may optionally store the data in memory - it streams by default.
-- Caches the assets on initialization - you need to restart the process to update the assets.
+- Caches the assets on initialization - you need to restart the process to update the assets.(can turn off with options.preload = false)
 - Uses MD5 hash sum as an ETag.
 - Uses .gz files if present on disk, like nginx gzip_static module
 
@@ -55,6 +55,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `files` (obj) - optional files object. See below.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.
 - `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listed files
+- `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work togather with `options.dynamic`.
 
 ### Aliases
 
