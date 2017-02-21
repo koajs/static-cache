@@ -1,4 +1,9 @@
 
+4.0.0 / 2017-02-21
+==================
+
+  * refactor: check prefix first to avoid calculate (#56)
+
 3.2.0 / 2017-01-07
 ==================
 
