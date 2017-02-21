@@ -15,7 +15,8 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   options = options || {}
-  options.prefix = (options.prefix || '').replace(/\/$/, '') + path.sep
+  // prefix must be ASCII code
+  options.prefix = (options.prefix || '').replace(/\/*$/, '/')
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
@@ -47,6 +48,8 @@ module.exports = function staticCache(dir, options, files) {
   return function* staticCache(next) {
     // only accept HEAD and GET
     if (this.method !== 'HEAD' && this.method !== 'GET') return yield next
+    // check prefix first to avoid calculate
+    if (this.path.indexOf(options.prefix) !== 0) return yield next
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
@@ -61,7 +64,7 @@ module.exports = function staticCache(dir, options, files) {
       if (filename.charAt(0) === path.sep) filename = filename.slice(1)
 
       // trim prefix
-      if (options.prefix !== path.sep) {
+      if (options.prefix !== '/') {
         if (filename.indexOf(filePrefix) !== 0) return yield next
         filename = filename.slice(filePrefix.length)
       }
