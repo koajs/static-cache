@@ -15,7 +15,8 @@ module.exports = function staticCache(dir, options, files) {
   }
 
   options = options || {}
-  options.prefix = (options.prefix || '').replace(/\/$/, '') + path.sep
+  // prefix must be ASCII code
+  options.prefix = (options.prefix || '').replace(/\/*$/, '/')
   files = files || options.files || Object.create(null)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
@@ -47,6 +48,8 @@ module.exports = function staticCache(dir, options, files) {
   return function* staticCache(next) {
     // only accept HEAD and GET
     if (this.method !== 'HEAD' && this.method !== 'GET') return yield next
+    // check prefix first to avoid calculate
+    if (this.path.indexOf(options.prefix) !== 0) return yield next
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
@@ -61,7 +64,7 @@ module.exports = function staticCache(dir, options, files) {
       if (filename.charAt(0) === path.sep) filename = filename.slice(1)
 
       // trim prefix
-      if (options.prefix !== path.sep) {
+      if (options.prefix !== '/') {
         if (filename.indexOf(filePrefix) !== 0) return yield next
         filename = filename.slice(filePrefix.length)
       }
@@ -98,8 +101,8 @@ module.exports = function staticCache(dir, options, files) {
 
     this.type = file.type
     this.length = file.zipBuffer ? file.zipBuffer.length : file.length
-    this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
-    if (file.md5) this.set('Content-MD5', file.md5)
+    this.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
+    if (file.md5) this.set('content-md5', file.md5)
 
     if (this.method === 'HEAD')
       return
@@ -108,7 +111,7 @@ module.exports = function staticCache(dir, options, files) {
 
     if (file.zipBuffer) {
       if (acceptGzip) {
-        this.set('Content-Encoding', 'gzip')
+        this.set('content-encoding', 'gzip')
         this.body = file.zipBuffer
       } else {
         this.body = file.buffer
@@ -130,7 +133,7 @@ module.exports = function staticCache(dir, options, files) {
         } else {
           file.zipBuffer = yield zlib.gzip(file.buffer)
         }
-        this.set('Content-Encoding', 'gzip')
+        this.set('content-encoding', 'gzip')
         this.body = file.zipBuffer
       } else {
         this.body = file.buffer
@@ -152,8 +155,8 @@ module.exports = function staticCache(dir, options, files) {
     this.body = stream
     // enable gzip will remove content length
     if (shouldGzip) {
-      this.remove('Content-Length')
-      this.set('Content-Encoding', 'gzip')
+      this.remove('content-length')
+      this.set('content-encoding', 'gzip')
       this.body = stream.pipe(zlib.createGzip())
     }
   }
