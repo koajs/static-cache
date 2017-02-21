@@ -101,8 +101,8 @@ module.exports = function staticCache(dir, options, files) {
 
     this.type = file.type
     this.length = file.zipBuffer ? file.zipBuffer.length : file.length
-    this.set('Cache-Control', file.cacheControl || 'public, max-age=' + file.maxAge)
-    if (file.md5) this.set('Content-MD5', file.md5)
+    this.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
+    if (file.md5) this.set('content-md5', file.md5)
 
     if (this.method === 'HEAD')
       return
@@ -111,7 +111,7 @@ module.exports = function staticCache(dir, options, files) {
 
     if (file.zipBuffer) {
       if (acceptGzip) {
-        this.set('Content-Encoding', 'gzip')
+        this.set('content-encoding', 'gzip')
         this.body = file.zipBuffer
       } else {
         this.body = file.buffer
@@ -133,7 +133,7 @@ module.exports = function staticCache(dir, options, files) {
         } else {
           file.zipBuffer = yield zlib.gzip(file.buffer)
         }
-        this.set('Content-Encoding', 'gzip')
+        this.set('content-encoding', 'gzip')
         this.body = file.zipBuffer
       } else {
         this.body = file.buffer
@@ -155,8 +155,8 @@ module.exports = function staticCache(dir, options, files) {
     this.body = stream
     // enable gzip will remove content length
     if (shouldGzip) {
-      this.remove('Content-Length')
-      this.set('Content-Encoding', 'gzip')
+      this.remove('content-length')
+      this.set('content-encoding', 'gzip')
       this.body = stream.pipe(zlib.createGzip())
     }
   }
