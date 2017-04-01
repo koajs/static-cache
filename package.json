@@ -1,7 +1,7 @@
 {
   "name": "koa-static-cache",
   "description": "Static cache for koa",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "author": {
     "name": "Jonathan Ong",
     "email": "me@jongleberry.com",
@@ -63,6 +63,6 @@
     "test": "make test"
   },
   "engines": {
-    "node": "> 0.12.0"
+    "node": "> 7.6.0"
   }
 }
