@@ -3,12 +3,12 @@ var crypto = require('crypto')
 var zlib = require('zlib')
 var request = require('supertest')
 var should = require('should')
-var koa = require('koa')
+var Koa = require('koa')
 var http = require('http')
 var path = require('path')
 var staticCache = require('..')
 
-var app = koa()
+var app = new Koa()
 var files = {}
 app.use(staticCache(path.join(__dirname, '..'), {
   alias: {
@@ -22,20 +22,20 @@ for (var key in files) {
 }
 var server = http.createServer(app.callback())
 
-var app2 = koa()
+var app2 = new Koa()
 app2.use(staticCache(path.join(__dirname, '..'), {
   buffer: true
 }))
 var server2 = http.createServer(app2.callback())
 
-var app3 = koa()
+var app3 = new Koa()
 app3.use(staticCache(path.join(__dirname, '..'), {
   buffer: true,
   gzip: true
 }))
 var server3 = http.createServer(app3.callback())
 
-var app4 = koa()
+var app4 = new Koa()
 var files4 = {}
 app4.use(staticCache(path.join(__dirname, '..'), {
   gzip: true
@@ -46,7 +46,7 @@ for (var key in files4) {
 }
 var server4 = http.createServer(app4.callback())
 
-var app5 = koa()
+var app5 = new Koa()
 app5.use(staticCache({
   buffer: true,
   prefix: '/static',
@@ -57,7 +57,7 @@ var server5 = http.createServer(app5.callback())
 describe('Static Cache', function () {
 
   it('should dir priority than options.dir', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache(path.join(__dirname, '..'), {
       dir: __dirname
     }))
@@ -68,7 +68,7 @@ describe('Static Cache', function () {
   })
 
   it('should default options.dir works fine', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({
       dir: path.join(__dirname, '..')
     }))
@@ -79,7 +79,7 @@ describe('Static Cache', function () {
   })
 
   it('should accept abnormal path', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({
       dir: path.join(__dirname, '..')
     }))
@@ -90,7 +90,7 @@ describe('Static Cache', function () {
   })
 
   it('should default process.cwd() works fine', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache())
     var server = app.listen()
     request(server)
@@ -341,7 +341,7 @@ describe('Static Cache', function () {
   })
 
   it('should 404 when dynamic = false', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: false}))
     var server = app.listen()
     fs.writeFileSync('a.js', 'hello world')
@@ -355,7 +355,7 @@ describe('Static Cache', function () {
   })
 
   it('should work fine when new file added in dynamic mode', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
     fs.writeFileSync('a.js', 'hello world')
@@ -369,7 +369,7 @@ describe('Static Cache', function () {
   })
 
   it('should work fine when new file added in dynamic and prefix mode', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true, prefix: '/static'}))
     var server = app.listen()
     fs.writeFileSync('a.js', 'hello world')
@@ -383,7 +383,7 @@ describe('Static Cache', function () {
   })
 
   it('should 404 when url without prefix in dynamic and prefix mode', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true, prefix: '/static'}))
     var server = app.listen()
     fs.writeFileSync('a.js', 'hello world')
@@ -397,7 +397,7 @@ describe('Static Cache', function () {
   })
 
   it('should 404 when new hidden file added in dynamic mode', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
     fs.writeFileSync('.a.js', 'hello world')
@@ -411,7 +411,7 @@ describe('Static Cache', function () {
   })
 
   it('should 404 when file not exist in dynamic mode', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
     request(server)
@@ -420,7 +420,7 @@ describe('Static Cache', function () {
   })
 
   it('should 404 when file not exist', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
     request(server)
@@ -429,7 +429,7 @@ describe('Static Cache', function () {
   })
 
   it('should 404 when is folder in dynamic mode', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({dynamic: true}))
     var server = app.listen()
     request(server)
@@ -438,7 +438,7 @@ describe('Static Cache', function () {
   })
 
   it('should array options.filter works fine', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({
       dir: path.join(__dirname, '..'),
       filter: ['index.js']
@@ -450,7 +450,7 @@ describe('Static Cache', function () {
   })
 
   it('should function options.filter works fine', function (done) {
-    var app = koa()
+    var app = new Koa()
     app.use(staticCache({
       dir: path.join(__dirname, '..'),
       filter: function (file) { return file.indexOf('index.js') === 0 }
@@ -462,7 +462,7 @@ describe('Static Cache', function () {
   })
 
   it('should options.dynamic and options.preload works fine', function (done) {
-    var app = koa()
+    var app = new Koa()
     var files = {}
     app.use(staticCache({
       dir: path.join(__dirname, '..'),

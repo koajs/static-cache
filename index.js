@@ -45,47 +45,47 @@ module.exports = function staticCache(dir, options, files) {
     })
   }
 
-  return function* staticCache(next) {
+  return async (ctx, next) => {
     // only accept HEAD and GET
-    if (this.method !== 'HEAD' && this.method !== 'GET') return yield next
+    if (ctx.method !== 'HEAD' && ctx.method !== 'GET') return await next()
     // check prefix first to avoid calculate
-    if (this.path.indexOf(options.prefix) !== 0) return yield next
+    if (ctx.path.indexOf(options.prefix) !== 0) return await next()
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
-    var filename = safeDecodeURIComponent(path.normalize(this.path))
+    var filename = safeDecodeURIComponent(path.normalize(ctx.path))
 
     var file = files[filename]
 
     // try to load file
     if (!file) {
-      if (!options.dynamic) return yield next
-      if (path.basename(filename)[0] === '.') return yield next
+      if (!options.dynamic) return await next()
+      if (path.basename(filename)[0] === '.') return await next()
       if (filename.charAt(0) === path.sep) filename = filename.slice(1)
 
       // trim prefix
       if (options.prefix !== '/') {
-        if (filename.indexOf(filePrefix) !== 0) return yield next
+        if (filename.indexOf(filePrefix) !== 0) return await next()
         filename = filename.slice(filePrefix.length)
       }
 
       var s
       try {
-        s = yield fs.stat(path.join(dir, filename))
+        s = await fs.stat(path.join(dir, filename))
       } catch (err) {
-        return yield next
+        return await next()
       }
-      if (!s.isFile()) return yield next
+      if (!s.isFile()) return await next()
 
       file = loadFile(filename, dir, options, files)
     }
 
-    this.status = 200
+    ctx.status = 200
 
-    if (enableGzip) this.vary('Accept-Encoding')
+    if (enableGzip) ctx.vary('Accept-Encoding')
 
     if (!file.buffer) {
-      var stats = yield fs.stat(file.path)
+      var stats = await fs.stat(file.path)
       if (stats.mtime > file.mtime) {
         file.mtime = stats.mtime
         file.md5 = null
@@ -93,28 +93,28 @@ module.exports = function staticCache(dir, options, files) {
       }
     }
 
-    this.response.lastModified = file.mtime
-    if (file.md5) this.response.etag = file.md5
+    ctx.response.lastModified = file.mtime
+    if (file.md5) ctx.response.etag = file.md5
 
-    if (this.fresh)
-      return this.status = 304
+    if (ctx.fresh)
+      return ctx.status = 304
 
-    this.type = file.type
-    this.length = file.zipBuffer ? file.zipBuffer.length : file.length
-    this.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
-    if (file.md5) this.set('content-md5', file.md5)
+    ctx.type = file.type
+    ctx.length = file.zipBuffer ? file.zipBuffer.length : file.length
+    ctx.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
+    if (file.md5) ctx.set('content-md5', file.md5)
 
-    if (this.method === 'HEAD')
+    if (ctx.method === 'HEAD')
       return
 
-    var acceptGzip = this.acceptsEncodings('gzip') === 'gzip'
+    var acceptGzip = ctx.acceptsEncodings('gzip') === 'gzip'
 
     if (file.zipBuffer) {
       if (acceptGzip) {
-        this.set('content-encoding', 'gzip')
-        this.body = file.zipBuffer
+        ctx.set('content-encoding', 'gzip')
+        ctx.body = file.zipBuffer
       } else {
-        this.body = file.buffer
+        ctx.body = file.buffer
       }
       return
     }
@@ -131,12 +131,12 @@ module.exports = function staticCache(dir, options, files) {
         if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { // if .gz file already read from disk
           file.zipBuffer = gzFile.buffer
         } else {
-          file.zipBuffer = yield zlib.gzip(file.buffer)
+          file.zipBuffer = await zlib.gzip(file.buffer)
         }
-        this.set('content-encoding', 'gzip')
-        this.body = file.zipBuffer
+        ctx.set('content-encoding', 'gzip')
+        ctx.body = file.zipBuffer
       } else {
-        this.body = file.buffer
+        ctx.body = file.buffer
       }
       return
     }
@@ -152,12 +152,12 @@ module.exports = function staticCache(dir, options, files) {
       })
     }
 
-    this.body = stream
+    ctx.body = stream
     // enable gzip will remove content length
     if (shouldGzip) {
-      this.remove('content-length')
-      this.set('content-encoding', 'gzip')
-      this.body = stream.pipe(zlib.createGzip())
+      ctx.remove('content-length')
+      ctx.set('content-encoding', 'gzip')
+      ctx.body = stream.pipe(zlib.createGzip())
     }
   }
 }

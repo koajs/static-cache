@@ -53,7 +53,7 @@
   "devDependencies": {
     "bluebird": "3",
     "istanbul": "~0.4.1",
-    "koa": "1",
+    "koa": "2",
     "mocha": "2",
     "should": "8",
     "should-http": "0.0.4",
