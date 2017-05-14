@@ -36,7 +36,10 @@ module.exports = function staticCache(dir, options, files) {
   if (options.alias) {
     Object.keys(options.alias).forEach(function (key) {
       var value = options.alias[key]
-
+      if(process.platform=='win32'){
+        value=value.replace(/\//g,'\\')
+        key=key.replace(/\//g,'\\')
+      }
       if (files[value]) {
         files[key] = files[value]
 
