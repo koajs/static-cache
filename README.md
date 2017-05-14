@@ -55,7 +55,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `files` (obj) - optional files object. See below.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.
 - `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listed files
-- `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work togather with `options.dynamic`.
+- `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work together with `options.dynamic`.
 
 ### Aliases
 
