@@ -52,10 +52,11 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.usePrecompiledGzip` (bool) - try use gzip files, loaded from disk, like nginx gzip_static
 - `options.alias` (obj) - object map of aliases. See below.
 - `options.prefix` (str) - the url prefix you wish to add, default to `''`.
-- `files` (obj) - optional files object. See below.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.
 - `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listed files
-- `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work togather with `options.dynamic`.
+- `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work together with `options.dynamic`.
+- `options.files` (obj) - optional files object. See below.
+- `files` (obj) - optional files object. See below.
 
 ### Aliases
 
@@ -110,6 +111,21 @@ app.use(staticCache('/public', {
 }, files))
 
 files['/package.json'].maxAge = 60 * 60 * 24 * 30
+```
+
+#### Using a LRU cache to avoid OOM when dynamic mode enabled
+
+You can pass in a lru cache instance which has tow methods: `get(key)` and `set(key, value)`.
+
+```js
+var LRU = require('lru-cache')
+var files = new LRU({ max: 1000 })
+
+app.use(staticCache({
+  dir: '/public',
+  dynamic: true,
+  files: files
+}))
 ```
 
 ## License

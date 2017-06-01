@@ -7,6 +7,7 @@ var koa = require('koa')
 var http = require('http')
 var path = require('path')
 var staticCache = require('..')
+var LRU = require('ylru')
 
 var app = koa()
 var files = {}
@@ -379,6 +380,51 @@ describe('Static Cache', function () {
       .expect(200, function(err) {
         fs.unlinkSync('a.js')
         done(err)
+      })
+  })
+
+  it('should work fine when new file added in dynamic mode with LRU', function (done) {
+    var app = koa()
+    var files = new LRU(1)
+    app.use(staticCache({dynamic: true, files: files}))
+    var server = app.listen()
+    fs.writeFileSync('a.js', 'hello world a')
+    fs.writeFileSync('b.js', 'hello world b')
+    fs.writeFileSync('c.js', 'hello world b')
+
+    request(server)
+      .get('/a.js')
+      .expect(200, function(err) {
+        should.exist(files.get('/a.js'))
+        should.not.exist(err)
+
+        request(server)
+          .get('/b.js')
+          .expect(200, function (err) {
+            should.not.exist(files.get('/a.js'))
+            should.exist(files.get('/b.js'))
+            should.not.exist(err)
+
+            request(server)
+              .get('/c.js')
+              .expect(200, function (err) {
+                should.not.exist(files.get('/b.js'))
+                should.exist(files.get('/c.js'))
+                should.not.exist(err)
+
+                request(server)
+                  .get('/a.js')
+                  .expect(200, function (err) {
+                    should.not.exist(files.get('/c.js'))
+                    should.exist(files.get('/a.js'))
+                    should.not.exist(err)
+                    fs.unlinkSync('a.js')
+                    fs.unlinkSync('b.js')
+                    fs.unlinkSync('c.js')
+                    done()
+                  })
+              })
+          })
       })
   })
 
