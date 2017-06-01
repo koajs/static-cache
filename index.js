@@ -17,7 +17,7 @@ module.exports = function staticCache(dir, options, files) {
   options = options || {}
   // prefix must be ASCII code
   options.prefix = (options.prefix || '').replace(/\/*$/, '/')
-  files = files || options.files || Object.create(null)
+  files = new FileManager(files || options.files)
   dir = dir || options.dir || process.cwd()
   var enableGzip = !!options.gzip
   var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
@@ -37,8 +37,8 @@ module.exports = function staticCache(dir, options, files) {
     Object.keys(options.alias).forEach(function (key) {
       var value = options.alias[key]
 
-      if (files[value]) {
-        files[key] = files[value]
+      if (files.get(value)) {
+        files.set(key, files.get(value))
 
         debug('aliasing ' + value + ' as ' + key)
       }
@@ -55,7 +55,7 @@ module.exports = function staticCache(dir, options, files) {
     // normalize for `//index`
     var filename = safeDecodeURIComponent(path.normalize(ctx.path))
 
-    var file = files[filename]
+    var file = files.get(filename)
 
     // try to load file
     if (!file) {
@@ -127,7 +127,7 @@ module.exports = function staticCache(dir, options, files) {
     if (file.buffer) {
       if (shouldGzip) {
 
-        var gzFile = files[filename + '.gz']
+        var gzFile = files.get(filename + '.gz')
         if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { // if .gz file already read from disk
           file.zipBuffer = gzFile.buffer
         } else {
@@ -183,7 +183,8 @@ function safeDecodeURIComponent(text) {
 
 function loadFile(name, dir, options, files) {
   var pathname = path.normalize(path.join(options.prefix, name))
-  var obj = files[pathname] = files[pathname] ? files[pathname] : {}
+  if (!files.get(pathname)) files.set(pathname, {})
+  var obj = files.get(pathname)
   var filename = obj.path = path.join(dir, name)
   var stats = fs.statSync(filename)
   var buffer = fs.readFileSync(filename)
@@ -201,4 +202,21 @@ function loadFile(name, dir, options, files) {
 
   buffer = null
   return obj
+}
+
+function FileManager(store) {
+  if (store && typeof store.set === 'function' && typeof store.get === 'function') {
+    this.store = store
+  } else {
+    this.map = store || Object.create(null)
+  }
+}
+
+FileManager.prototype.get = function (key) {
+  return this.store ? this.store.get(key) : this.map[key]
+}
+
+FileManager.prototype.set = function (key, value) {
+  if (this.store) return this.store.set(key, value)
+  this.map[key] = value
 }
