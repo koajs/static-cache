@@ -525,4 +525,19 @@ describe('Static Cache', function () {
         done()
       })
   })
+
+  it('should loadFile under options.dir', function (done) {
+    var app = koa()
+    var files = {}
+    app.use(staticCache({
+      dir: __dirname,
+      preload: false,
+      dynamic: true,
+    }))
+    files.should.eql({})
+    request(app.listen())
+      .get('/%2E%2E/package.json')
+      .expect(404)
+      .end(done);
+  })
 })

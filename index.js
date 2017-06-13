@@ -71,7 +71,11 @@ module.exports = function staticCache(dir, options, files) {
 
       var s
       try {
-        s = yield fs.stat(path.join(dir, filename))
+        var fullpath = path.join(dir, filename)
+        if (fullpath.indexOf(dir) === -1) {
+          return yield next
+        }
+        s = yield fs.stat(fullpath);
       } catch (err) {
         return yield next
       }
