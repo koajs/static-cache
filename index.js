@@ -69,16 +69,19 @@ module.exports = function staticCache(dir, options, files) {
         filename = filename.slice(filePrefix.length)
       }
 
+      var fullpath = path.join(dir, filename)
+      // files that can be accessd should be under options.dir
+      if (fullpath.indexOf(path.normalize(dir)) !== 0) {
+        return yield next
+      }
+
       var s
       try {
-        var fullpath = path.join(dir, filename)
-        if (fullpath.indexOf(path.normalize(dir)) !== 0) {
-          return yield next
-        }
         s = yield fs.stat(fullpath);
       } catch (err) {
         return yield next
       }
+
       if (!s.isFile()) return yield next
 
       file = loadFile(filename, dir, options, files)
