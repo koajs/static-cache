@@ -53,8 +53,7 @@ module.exports = function staticCache(dir, options, files) {
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
-    var filename = safeDecodeURIComponent(path.normalize(this.path))
-
+    var filename = path.normalize(safeDecodeURIComponent(this.path))
     var file = files.get(filename)
 
     // try to load file
