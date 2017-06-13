@@ -19,6 +19,7 @@ module.exports = function staticCache(dir, options, files) {
   options.prefix = (options.prefix || '').replace(/\/*$/, '/')
   files = new FileManager(files || options.files)
   dir = dir || options.dir || process.cwd()
+  dir = path.normalize(dir)
   var enableGzip = !!options.gzip
   var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
 
@@ -53,8 +54,7 @@ module.exports = function staticCache(dir, options, files) {
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
-    var filename = safeDecodeURIComponent(path.normalize(ctx.path))
-
+    var filename = path.normalize(safeDecodeURIComponent(ctx.path))
     var file = files.get(filename)
 
     // try to load file
@@ -69,9 +69,15 @@ module.exports = function staticCache(dir, options, files) {
         filename = filename.slice(filePrefix.length)
       }
 
+      var fullpath = path.join(dir, filename)
+      // files that can be accessd should be under options.dir
+      if (fullpath.indexOf(dir) !== 0) {
+        return await next()
+      }
+
       var s
       try {
-        s = await fs.stat(path.join(dir, filename))
+        s = await fs.stat(fullpath)
       } catch (err) {
         return await next()
       }
