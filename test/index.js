@@ -536,6 +536,6 @@ describe('Static Cache', function () {
     request(app.listen())
       .get('/%2E%2E/package.json')
       .expect(404)
-      .end(done);
+      .end(done)
   })
 })
