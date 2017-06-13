@@ -19,6 +19,7 @@ module.exports = function staticCache(dir, options, files) {
   options.prefix = (options.prefix || '').replace(/\/*$/, '/')
   files = new FileManager(files || options.files)
   dir = dir || options.dir || process.cwd()
+  dir = path.normalize(dir);
   var enableGzip = !!options.gzip
   var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
 
@@ -70,7 +71,7 @@ module.exports = function staticCache(dir, options, files) {
 
       var fullpath = path.join(dir, filename)
       // files that can be accessd should be under options.dir
-      if (fullpath.indexOf(path.normalize(dir)) !== 0) {
+      if (fullpath.indexOf(dir) !== 0) {
         return yield next
       }
 
