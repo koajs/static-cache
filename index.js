@@ -29,7 +29,7 @@ module.exports = function staticCache(dir, options, files) {
   if (typeof options.filter === 'function') fileFilter = options.filter
 
   if (options.preload !== false) {
-    readDir(dir).filter(fileFilter).forEach(function (name) {
+    readDir(dir, fileFilter).forEach(function (name) {
       loadFile(name, dir, options, files)
     })
   }
