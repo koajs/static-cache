@@ -1,4 +1,11 @@
 
+5.1.2 / 2018-02-06
+==================
+
+**others**
+  * [[`ba60f3d`](http://github.com/koajs/static-cache/commit/ba60f3d859e98efd41a625fd0410ff4d930bf37b)] - deps: use ^ (dead-horse <<dead_horse@qq.com>>)
+  * [[`82274d0`](http://github.com/koajs/static-cache/commit/82274d02d3601282cb363a2339081393ef2bf83d)] - deps: Update package.json bump debug and mz versions (#73) (Iain Maitland <<imaitland@protonmail.com>>)
+
 5.1.1 / 2017-06-13
 ==================
 
