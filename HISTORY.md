@@ -1,4 +1,10 @@
 
+3.2.1 / 2018-09-12
+==================
+
+**fixes**
+  * [[`47a0554`](http://github.com/koajs/static-cache/commit/47a05545288cec63bbde32edbcaeb18e03a67874)] - fix: pin debug@3 (Yiyu He <<dead_horse@qq.com>>)
+
 3.2.0 / 2017-01-07
 ==================
 
