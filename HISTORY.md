@@ -1,4 +1,10 @@
 
+4.1.2 / 2018-09-12
+==================
+
+**others**
+  * [[`bd33e64`](http://github.com/koajs/static-cache/commit/bd33e64e21403c7f8dad9d7e4e0c68568b9d1243)] - deps: pin debug@3 to support node 4 (#79) (fengmk2 <<fengmk2@gmail.com>>)
+
 4.1.1 / 2017-06-13
 ==================
 
