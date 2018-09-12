@@ -45,7 +45,7 @@
   },
   "dependencies": {
     "compressible": "~2.0.6",
-    "debug": "*",
+    "debug": "^3.2.5",
     "fs-readdir-recursive": "~1.0.0",
     "mime-types": "~2.1.8",
     "mz": "~2.4.0"
