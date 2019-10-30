@@ -213,14 +213,13 @@ describe('Static Cache', function () {
     .expect(200, done)
   })
 
-  it('should set the etag and content-md5 headers', function (done) {
+  it('should set the etag header', function (done) {
     var pk = fs.readFileSync('package.json')
     var md5 = crypto.createHash('md5').update(pk).digest('base64')
 
     request(server)
     .get('/package.json')
     .expect('ETag', '"' + md5 + '"')
-    .expect('Content-MD5', md5)
     .expect(200, done)
   })
 
