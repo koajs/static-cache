@@ -526,6 +526,40 @@ describe('Static Cache', function () {
       })
   })
 
+  it('should options.alias and options.preload works fine', function (done) {
+    var app = new Koa()
+    var files = {}
+    app.use(staticCache({
+      dir: path.join(__dirname, '..'),
+      preload: false,
+      dynamic: true,
+      alias: {
+        '/package': '/package.json'
+      },
+      files: files
+    }))
+    files.should.eql({})
+    request(app.listen())
+      .get('/package')
+      .expect(200, function (err, res) {
+        if (err) return done(err)
+        should.not.exist(err)
+        files.should.have.keys('/package.json')
+        files.should.not.have.keys('/package')
+
+        request(app.listen())
+          .get('/package.json')
+          .expect(200, function (err, res) {
+            if (err) return done(err)
+            should.not.exist(err)
+            files.should.have.keys('/package.json')
+            should.ok(Object.keys(files).length === 1)
+            done()
+          })
+      })
+  })
+
+
   it('should loadFile under options.dir', function (done) {
     var app = new Koa()
     app.use(staticCache({

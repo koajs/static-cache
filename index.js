@@ -34,18 +34,6 @@ module.exports = function staticCache(dir, options, files) {
     })
   }
 
-  if (options.alias) {
-    Object.keys(options.alias).forEach(function (key) {
-      var value = options.alias[key]
-
-      if (files.get(value)) {
-        files.set(key, files.get(value))
-
-        debug('aliasing ' + value + ' as ' + key)
-      }
-    })
-  }
-
   return async (ctx, next) => {
     // only accept HEAD and GET
     if (ctx.method !== 'HEAD' && ctx.method !== 'GET') return await next()
@@ -55,8 +43,11 @@ module.exports = function staticCache(dir, options, files) {
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
     var filename = path.normalize(safeDecodeURIComponent(ctx.path))
-    var file = files.get(filename)
 
+    // check alias
+    if (options.alias && options.alias[filename]) filename = options.alias[filename];
+
+    var file = files.get(filename)
     // try to load file
     if (!file) {
       if (!options.dynamic) return await next()
