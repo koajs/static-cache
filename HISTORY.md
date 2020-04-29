@@ -1,4 +1,10 @@
 
+5.1.3 / 2020-04-29
+==================
+
+**fixes**
+  * [[`dca1edf`](http://github.com/koajs/static-cache/commit/dca1edf0b641993921b33c0289dbd73ff4bc1c13)] - fix: alias should work when preload = false (#84) (TZ | 天猪 <<atian25@qq.com>>)
+
 5.1.2 / 2018-02-06
 ==================
 
