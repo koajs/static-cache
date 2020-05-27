@@ -83,7 +83,7 @@ module.exports = function staticCache(dir, options, files) {
 
     if (!file.buffer) {
       var stats = await fs.stat(file.path)
-      if (stats.mtime > file.mtime) {
+      if (stats.mtime + "" !== file.mtime + "") {
         file.mtime = stats.mtime
         file.md5 = null
         file.length = stats.size
@@ -93,7 +93,7 @@ module.exports = function staticCache(dir, options, files) {
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
 
-    if (ctx.fresh)
+    if (file.md5 && ctx.fresh)
       return ctx.status = 304
 
     ctx.type = file.type
