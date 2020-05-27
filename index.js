@@ -148,7 +148,7 @@ module.exports = function staticCache(dir, options, files) {
         file.md5 = hash.digest('base64')
       })
     }
-
+    ctx.response.etag = file.md5
     ctx.body = stream
     // enable gzip will remove content length
     if (shouldGzip) {
