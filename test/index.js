@@ -14,44 +14,52 @@ var files = {}
 app.use(staticCache(path.join(__dirname, '..'), {
   alias: {
     '/package': '/package.json'
+  },
+  filter(file) {
+    return !file.includes('node_modules')
   }
 }, files))
 
-// force the files' mtime
-for (var key in files) {
-  files[key].mtime = new Date()
-}
 var server = http.createServer(app.callback())
 
 var app2 = new Koa()
 app2.use(staticCache(path.join(__dirname, '..'), {
-  buffer: true
+  buffer: true,
+  filter(file) {
+    return !file.includes('node_modules')
+  }
 }))
 var server2 = http.createServer(app2.callback())
 
 var app3 = new Koa()
 app3.use(staticCache(path.join(__dirname, '..'), {
   buffer: true,
-  gzip: true
+  gzip: true,
+  filter(file) {
+    return !file.includes('node_modules')
+  }
 }))
 var server3 = http.createServer(app3.callback())
 
 var app4 = new Koa()
 var files4 = {}
 app4.use(staticCache(path.join(__dirname, '..'), {
-  gzip: true
+  gzip: true,
+  filter(file) {
+    return !file.includes('node_modules')
+  }
 }, files4))
-// force the files' mtime
-for (var key in files4) {
-  files4[key].mtime = new Date()
-}
+
 var server4 = http.createServer(app4.callback())
 
 var app5 = new Koa()
 app5.use(staticCache({
   buffer: true,
   prefix: '/static',
-  dir: path.join(__dirname, '..')
+  dir: path.join(__dirname, '..'),
+  filter(file) {
+    return !file.includes('node_modules')
+  }
 }))
 var server5 = http.createServer(app5.callback())
 
@@ -225,6 +233,27 @@ describe('Static Cache', function () {
   })
 
   it('should set Last-Modified if file modified and not buffered', function (done) {
+    setTimeout(function () {
+      var readme = fs.readFileSync('README.md', 'utf8')
+      fs.writeFileSync('README.md', readme, 'utf8')
+      var mtime = fs.statSync('README.md').mtime
+      var md5 = files['/README.md'].md5
+      request(server)
+      .get('/README.md')
+      .expect(200, function (err, res) {
+        res.should.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.not.have.header('ETag')
+        files['/README.md'].mtime.should.eql(mtime)
+        setTimeout(function () {
+          files['/README.md'].md5.should.equal(md5)
+        }, 10)
+        done()
+      })
+    }, 1000)
+  })
+
+  it('should set Last-Modified if file rollback and not buffered', function (done) {
     setTimeout(function () {
       var readme = fs.readFileSync('README.md', 'utf8')
       fs.writeFileSync('README.md', readme, 'utf8')
