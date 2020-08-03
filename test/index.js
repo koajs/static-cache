@@ -112,7 +112,6 @@ describe('Static Cache', function () {
 
       res.should.have.header('Content-Length')
       res.should.have.header('Last-Modified')
-      res.should.have.header('ETag')
       etag = res.headers.etag
 
       done()
@@ -131,7 +130,6 @@ describe('Static Cache', function () {
 
       res.should.have.header('Content-Length')
       res.should.have.header('Last-Modified')
-      res.should.have.header('ETag')
 
       etag = res.headers.etag
 
@@ -151,7 +149,6 @@ describe('Static Cache', function () {
 
       res.should.have.header('Content-Length')
       res.should.have.header('Last-Modified')
-      res.should.have.header('ETag')
 
       done()
     })
@@ -263,7 +260,6 @@ describe('Static Cache', function () {
           return done(err)
         res.should.have.header('Content-Length')
         res.should.have.header('Last-Modified')
-        res.should.have.header('ETag')
 
         etag = res.headers.etag
 
