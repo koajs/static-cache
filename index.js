@@ -98,7 +98,6 @@ module.exports = function staticCache(dir, options, files) {
     ctx.type = file.type
     ctx.length = file.zipBuffer ? file.zipBuffer.length : file.length
     ctx.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
-    if (file.md5) ctx.set('content-md5', file.md5)
 
     if (ctx.method === 'HEAD') return
 
