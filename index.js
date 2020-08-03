@@ -5,7 +5,6 @@ var path = require('path')
 var mime = require('mime-types')
 var compressible = require('compressible')
 var readDir = require('fs-readdir-recursive')
-const { stat } = require('fs')
 var debug = require('debug')('koa-static-cache')
 
 module.exports = function staticCache(dir, options, files) {
