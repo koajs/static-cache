@@ -185,7 +185,7 @@ function loadFile(name, dir, options, files) {
   var buffer = fs.readFileSync(filename)
 
   obj.cacheControl = options.cacheControl
-  obj.maxAge = obj.maxAge ? obj.maxAge : options.maxAge || 0
+  obj.maxAge = (typeof obj.maxAge === 'number' ? obj.maxAge : options.maxAge) || 0
   obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
   obj.mtime = stats.mtime
   obj.length = stats.size
