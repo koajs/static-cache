@@ -83,12 +83,19 @@ module.exports = function staticCache(dir, options, files) {
 
     if (!file.buffer) {
       var stats = await fs.stat(file.path)
-      if (stats.mtime > file.mtime) {
-        file.mtime = stats.mtime
-        file.md5 = null
-        file.length = stats.size
+      if (stats.mtime != file.mtime) {
+        var buffer = fs.readFileSync(file.path)
+        let md5 = crypto.createHash('md5').update(buffer).digest('base64')
+        if (file.md5 != md5) {
+          file.mtime = stats.mtime
+          file.md5 = md5
+          file.length = stats.size
+        } else {
+          file.mtime = stats.mtime
+        }
       }
     }
+
 
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
