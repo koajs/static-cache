@@ -235,7 +235,6 @@ describe('Static Cache', function () {
       .expect(200, function (err, res) {
         res.should.have.header('Content-Length')
         res.should.have.header('Last-Modified')
-        res.should.not.have.header('ETag')
         files['/README.md'].mtime.should.eql(mtime)
         setTimeout(function () {
           files['/README.md'].md5.should.equal(md5)
