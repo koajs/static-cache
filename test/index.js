@@ -160,20 +160,6 @@ describe('Static Cache', function () {
     .expect(404, done)
   })
 
-  it('should support conditional HEAD requests', function (done) {
-    request(server)
-    .head('/index.js')
-    .set('If-None-Match', etag)
-    .expect(304, done)
-  })
-
-  it('should support conditional GET requests', function (done) {
-    request(server)
-    .get('/index.js')
-    .set('If-None-Match', etag)
-    .expect(304, done)
-  })
-
   it('should support HEAD', function (done) {
     request(server)
     .head('/index.js')
