@@ -83,7 +83,7 @@ module.exports = function staticCache(dir, options, files) {
 
     if (!file.buffer) {
       var stats = await fs.stat(file.path)
-      if (stats.mtime + "" !== file.mtime + "") {
+      if (stats.mtime > file.mtime) {
         file.mtime = stats.mtime
         file.md5 = null
         file.length = stats.size
