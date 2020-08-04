@@ -93,7 +93,7 @@ module.exports = function staticCache(dir, options, files) {
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
 
-    if (ctx.fresh) return ctx.status = 304
+    if (file.md5 && ctx.fresh) return ctx.status = 304
 
     ctx.type = file.type
     ctx.length = file.zipBuffer ? file.zipBuffer.length : file.length
