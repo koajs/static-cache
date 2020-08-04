@@ -83,7 +83,7 @@ module.exports = function staticCache(dir, options, files) {
 
     if (!file.buffer) {
       var stats = await fs.stat(file.path)
-      if (stats.mtime > file.mtime) {
+      if (stats.mtime.getTime() !== file.mtime.getTime()) {
         file.mtime = stats.mtime
         file.md5 = null
         file.length = stats.size
@@ -93,16 +93,14 @@ module.exports = function staticCache(dir, options, files) {
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
 
-    if (file.md5 && ctx.fresh)
-      return ctx.status = 304
+    if (ctx.fresh) return ctx.status = 304
 
     ctx.type = file.type
     ctx.length = file.zipBuffer ? file.zipBuffer.length : file.length
     ctx.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
     if (file.md5) ctx.set('content-md5', file.md5)
 
-    if (ctx.method === 'HEAD')
-      return
+    if (ctx.method === 'HEAD') return
 
     var acceptGzip = ctx.acceptsEncodings('gzip') === 'gzip'
 

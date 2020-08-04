@@ -1,4 +1,12 @@
 
+5.1.4 / 2020-08-03
+==================
+
+**fixes**
+  * [[`2735fab`](http://github.com/koajs/static-cache/commit/2735fab6b9303da8ea941eab66f719440e0f2763)] - fix: remove unused require (dead-horse <<dead_horse@qq.com>>)
+  * [[`e12d920`](http://github.com/koajs/static-cache/commit/e12d9202e4900f17f7808e505ae39c161615be7f)] - fix: correct the time compare (dead-horse <<dead_horse@qq.com>>)
+  * [[`c24e6c3`](http://github.com/koajs/static-cache/commit/c24e6c3fe59b896b92a69045deaa0766f6c40836)] - fix: mtime (#93) (Jlin <<565774991@qq.com>>)
+
 5.1.3 / 2020-04-29
 ==================
 
