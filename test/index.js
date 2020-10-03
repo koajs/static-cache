@@ -189,7 +189,7 @@ describe('Static Cache', function () {
     request(server)
     .head('/index.js')
     .expect(200)
-    .expect('', done)
+    .expect(undefined, done)
   })
 
   it('should support 404 Not Found for other Methods to allow downstream',
@@ -284,7 +284,7 @@ describe('Static Cache', function () {
       .expect('Cache-Control', 'public, max-age=0')
       .expect('Content-Encoding', 'gzip')
       .expect('Content-Type', /javascript/)
-      .expect('Content-Length', content.length)
+      .expect('Content-Length', String(content.length))
       .expect('Vary', 'Accept-Encoding')
       .expect(index.toString())
       .end(function (err, res) {
@@ -310,7 +310,7 @@ describe('Static Cache', function () {
     .expect(200)
     .expect('Cache-Control', 'public, max-age=0')
     .expect('Content-Type', /javascript/)
-    .expect('Content-Length', index.length)
+    .expect('Content-Length', String(index.length))
     .expect('Vary', 'Accept-Encoding')
     .expect(index.toString())
     .end(function (err, res) {
