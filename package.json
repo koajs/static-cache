@@ -57,7 +57,7 @@
     "mocha": "2",
     "should": "8",
     "should-http": "0.0.4",
-    "supertest": "1",
+    "supertest": "5",
     "ylru": "1"
   },
   "scripts": {
