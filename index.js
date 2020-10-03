@@ -6,6 +6,7 @@ var mime = require('mime-types')
 var compressible = require('compressible')
 var readDir = require('fs-readdir-recursive')
 var debug = require('debug')('koa-static-cache')
+var util = require('util');
 
 module.exports = function staticCache(dir, options, files) {
   if (typeof dir === 'object') {
@@ -20,6 +21,7 @@ module.exports = function staticCache(dir, options, files) {
   files = new FileManager(files || options.files)
   dir = dir || options.dir || process.cwd()
   dir = path.normalize(dir)
+  var enableBrotli = !!options.brotli
   var enableGzip = !!options.gzip
   var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
 
@@ -79,7 +81,7 @@ module.exports = function staticCache(dir, options, files) {
 
     ctx.status = 200
 
-    if (enableGzip) ctx.vary('Accept-Encoding')
+    if (enableBrotli || enableGzip) ctx.vary('Accept-Encoding')
 
     if (!file.buffer) {
       var stats = await fs.stat(file.path)
@@ -102,10 +104,14 @@ module.exports = function staticCache(dir, options, files) {
 
     if (ctx.method === 'HEAD') return
 
+    var acceptBrotli = ctx.acceptsEncodings('br') === 'br'
     var acceptGzip = ctx.acceptsEncodings('gzip') === 'gzip'
 
     if (file.zipBuffer) {
-      if (acceptGzip) {
+      if (acceptBrotli) {
+        ctx.set('content-encoding', 'br')
+        ctx.body = file.brBuffer
+      } else if (acceptGzip) {
         ctx.set('content-encoding', 'gzip')
         ctx.body = file.zipBuffer
       } else {
@@ -114,13 +120,27 @@ module.exports = function staticCache(dir, options, files) {
       return
     }
 
+    var shouldBrotli = enableBrotli
+      && file.length > 1024
+      && acceptBrotli
+      && compressible(file.type)
     var shouldGzip = enableGzip
       && file.length > 1024
       && acceptGzip
       && compressible(file.type)
 
     if (file.buffer) {
-      if (shouldGzip) {
+      if (shouldBrotli) {
+
+        var brFile = files.get(filename + '.br')
+        if (options.usePrecompiledBrotli && brFile && brFile.buffer) { // if .br file already read from disk
+          file.brBuffer = brFile.buffer
+        } else {
+          file.brBuffer = await util.promisify(zlib.brotliCompress)(file.buffer)
+        }
+        ctx.set('content-encoding', 'br')
+        ctx.body = file.brBuffer
+      } else if (shouldGzip) {
 
         var gzFile = files.get(filename + '.gz')
         if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { // if .gz file already read from disk
@@ -148,8 +168,12 @@ module.exports = function staticCache(dir, options, files) {
     }
 
     ctx.body = stream
-    // enable gzip will remove content length
-    if (shouldGzip) {
+    // enable brotli/gzip will remove content length
+    if (shouldBrotli) {
+      ctx.remove('content-length')
+      ctx.set('content-encoding', 'br')
+      ctx.body = stream.pipe(zlib.createBrotliCompress())
+    } else if (shouldGzip) {
       ctx.remove('content-length')
       ctx.set('content-encoding', 'gzip')
       ctx.body = stream.pipe(zlib.createGzip())

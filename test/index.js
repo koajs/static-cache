@@ -63,6 +63,26 @@ app5.use(staticCache({
 }))
 var server5 = http.createServer(app5.callback())
 
+var app6 = new Koa()
+app6.use(staticCache(path.join(__dirname, '..'), {
+  buffer: true,
+  brotli: true,
+  filter(file) {
+    return !file.includes('node_modules')
+  }
+}))
+var server6 = http.createServer(app6.callback())
+
+var app7 = new Koa()
+var files7 = {}
+app7.use(staticCache(path.join(__dirname, '..'), {
+  brotli: true,
+  filter(file) {
+    return !file.includes('node_modules')
+  }
+}, files7))
+var server7 = http.createServer(app7.callback())
+
 describe('Static Cache', function () {
 
   it('should dir priority than options.dir', function (done) {
@@ -600,5 +620,86 @@ describe('Static Cache', function () {
       .get('/%2E%2E/package.json')
       .expect(404)
       .end(done)
+  })
+
+  it('should serve files with brotli buffer', function (done) {
+    var index = fs.readFileSync('index.js')
+    zlib.brotliCompress(index, function (err, content) {
+      request(server6)
+      .get('/index.js')
+      .set('Accept-Encoding', 'br')
+      .responseType('arraybuffer')
+      .expect(200)
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Content-Encoding', 'br')
+      .expect('Content-Type', /javascript/)
+      .expect('Content-Length', String(content.length))
+      .expect('Vary', 'Accept-Encoding')
+      .expect(function (res) {
+        return res.body.toString('hex') === content.toString('hex')
+      })
+      .end(function (err, res) {
+        if (err)
+          return done(err)
+        res.should.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.have.header('ETag')
+
+        etag = res.headers.etag
+
+        done()
+      })
+    })
+  })
+
+  it('should not serve files with brotli buffer when accept encoding not include br',
+  function (done) {
+    var index = fs.readFileSync('index.js')
+    request(server6)
+    .get('/index.js')
+    .set('Accept-Encoding', '')
+    .expect(200)
+    .expect('Cache-Control', 'public, max-age=0')
+    .expect('Content-Type', /javascript/)
+    .expect('Content-Length', String(index.length))
+    .expect('Vary', 'Accept-Encoding')
+    .expect(index.toString())
+    .end(function (err, res) {
+      if (err)
+        return done(err)
+      res.should.not.have.header('Content-Encoding')
+      res.should.have.header('Content-Length')
+      res.should.have.header('Last-Modified')
+      res.should.have.header('ETag')
+      done()
+    })
+  })
+
+  it('should serve files with brotli stream', function (done) {
+    var index = fs.readFileSync('index.js')
+    zlib.brotliCompress(index, function (err, content) {
+      request(server7)
+      .get('/index.js')
+      .set('Accept-Encoding', 'br')
+      .expect(200)
+      .expect('Cache-Control', 'public, max-age=0')
+      .expect('Content-Encoding', 'br')
+      .expect('Content-Type', /javascript/)
+      .expect('Vary', 'Accept-Encoding')
+      .expect(function (res) {
+        return res.body.toString('hex') === content.toString('hex')
+      })
+      .end(function (err, res) {
+        if (err)
+          return done(err)
+        res.should.not.have.header('Content-Length')
+        res.should.have.header('Last-Modified')
+        res.should.have.header('ETag')
+
+        etag = res.headers.etag
+
+        done()
+      })
+    })
   })
 })
