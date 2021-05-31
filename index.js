@@ -145,6 +145,9 @@ module.exports = function staticCache(dir, options, files) {
       stream.on('end', function () {
         file.md5 = hash.digest('base64')
       })
+
+      // set stream to paused, avoid missing data. it will auto flow after pipe.
+      stream.pause()
     }
 
     ctx.body = stream
