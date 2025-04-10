@@ -1,12 +1,11 @@
-var crypto = require('crypto')
-var fsPromises = require('fs/promises')
-var fs = require('fs') // Add regular fs for sync operations
-var zlib = require('zlib')
-var path = require('path')
-var mime = require('mime-types')
-var compressible = require('compressible')
-var readDir = require('fs-readdir-recursive')
-var debug = require('debug')('koa-static-cache')
+const crypto = require('crypto')
+const fs = require('mz/fs')
+const zlib = require('mz/zlib')
+const path = require('path')
+const mime = require('mime-types')
+const compressible = require('compressible')
+const readDir = require('fs-readdir-recursive')
+const debug = require('debug')('koa-static-cache')
 
 module.exports = function staticCache(dir, options, files) {
   if (typeof dir === 'object') {
@@ -21,17 +20,11 @@ module.exports = function staticCache(dir, options, files) {
   files = new FileManager(files || options.files)
   dir = dir || options.dir || process.cwd()
   dir = path.normalize(dir)
-  alias = options.alias || undefined
-  if(alias) {
-    for(const key in alias) {
-      alias[path.normalize(key)] = alias[key]
-    }
-  }
-  var enableGzip = !!options.gzip
-  var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
+  const enableGzip = !!options.gzip
+  const filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
 
   // option.filter
-  var fileFilter = function () { return true }
+  let fileFilter = function () { return true }
   if (Array.isArray(options.filter)) fileFilter = function (file) { return ~options.filter.indexOf(file) }
   if (typeof options.filter === 'function') fileFilter = options.filter
 
@@ -49,12 +42,12 @@ module.exports = function staticCache(dir, options, files) {
 
     // decode for `/%E4%B8%AD%E6%96%87`
     // normalize for `//index`
-    var filename = path.normalize(safeDecodeURIComponent(ctx.path))
+    let filename = path.normalize(safeDecodeURIComponent(ctx.path))
 
     // check alias
-    if (alias && alias[filename]) filename = alias[filename];
+    if (options.alias && options.alias[filename]) filename = options.alias[filename];
 
-    var file = files.get(filename)
+    let file = files.get(filename)
     // try to load file
     if (!file) {
       if (!options.dynamic) return await next()
@@ -67,15 +60,14 @@ module.exports = function staticCache(dir, options, files) {
         filename = filename.slice(filePrefix.length)
       }
 
-      var fullpath = path.join(dir, filename)
+      const fullpath = path.join(dir, filename)
       // files that can be accessd should be under options.dir
       if (fullpath.indexOf(dir) !== 0) {
         return await next()
       }
 
-      var s
       try {
-        s = await fsPromises.stat(fullpath)
+        s = await fs.stat(fullpath)
       } catch (err) {
         return await next()
       }
@@ -89,7 +81,7 @@ module.exports = function staticCache(dir, options, files) {
     if (enableGzip) ctx.vary('Accept-Encoding')
 
     if (!file.buffer) {
-      var stats = await fsPromises.stat(file.path)
+      const stats = await fs.stat(file.path)
       if (stats.mtime.getTime() !== file.mtime.getTime()) {
         file.mtime = stats.mtime
         file.md5 = null
@@ -109,7 +101,7 @@ module.exports = function staticCache(dir, options, files) {
 
     if (ctx.method === 'HEAD') return
 
-    var acceptGzip = ctx.acceptsEncodings('gzip') === 'gzip'
+    const acceptGzip = ctx.acceptsEncodings('gzip') === 'gzip'
 
     if (file.zipBuffer) {
       if (acceptGzip) {
@@ -121,7 +113,7 @@ module.exports = function staticCache(dir, options, files) {
       return
     }
 
-    var shouldGzip = enableGzip
+    const shouldGzip = enableGzip
       && file.length > 1024
       && acceptGzip
       && compressible(file.type)
@@ -129,8 +121,9 @@ module.exports = function staticCache(dir, options, files) {
     if (file.buffer) {
       if (shouldGzip) {
 
-        var gzFile = files.get(filename + '.gz')
-        if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { // if .gz file already read from disk
+        const gzFile = files.get(filename + '.gz')
+        if (options.usePrecompiledGzip && gzFile && gzFile.buffer) { 
+          // if .gz file already read from disk
           file.zipBuffer = gzFile.buffer
         } else {
           file.zipBuffer = await zlib.gzip(file.buffer)
@@ -143,11 +136,11 @@ module.exports = function staticCache(dir, options, files) {
       return
     }
 
-    var stream = fs.createReadStream(file.path)
+    const stream = fs.createReadStream(file.path)
 
     // update file hash
     if (!file.md5) {
-      var hash = crypto.createHash('md5')
+      const hash = crypto.createHash('md5')
       stream.on('data', hash.update.bind(hash))
       stream.on('end', function () {
         file.md5 = hash.digest('base64')
@@ -184,12 +177,12 @@ function safeDecodeURIComponent(text) {
  */
 
 function loadFile(name, dir, options, files) {
-  var pathname = path.normalize(path.join(options.prefix, name))
+  const pathname = path.normalize(path.join(options.prefix, name))
   if (!files.get(pathname)) files.set(pathname, {})
-  var obj = files.get(pathname)
-  var filename = obj.path = path.join(dir, name)
-  var stats = fs.statSync(filename)
-  var buffer = fs.readFileSync(filename)
+  const obj = files.get(pathname)
+  const filename = obj.path = path.join(dir, name)
+  const stats = fs.statSync(filename)
+  let buffer = fs.readFileSync(filename)
 
   obj.cacheControl = options.cacheControl
   obj.maxAge = (typeof obj.maxAge === 'number' ? obj.maxAge : options.maxAge) || 0
