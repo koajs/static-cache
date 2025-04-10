@@ -21,6 +21,12 @@ module.exports = function staticCache(dir, options, files) {
   files = new FileManager(files || options.files)
   dir = dir || options.dir || process.cwd()
   dir = path.normalize(dir)
+  alias = options.alias || undefined
+  if(alias) {
+    for(const key in alias) {
+      alias[path.normalize(key)] = alias[key]
+    }
+  }
   var enableGzip = !!options.gzip
   var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
 
@@ -46,7 +52,7 @@ module.exports = function staticCache(dir, options, files) {
     var filename = path.normalize(safeDecodeURIComponent(ctx.path))
 
     // check alias
-    if (options.alias && options.alias[filename]) filename = options.alias[filename];
+    if (alias && alias[filename]) filename = alias[filename];
 
     var file = files.get(filename)
     // try to load file
