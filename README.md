@@ -48,11 +48,11 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.maxAge` (int) - cache control max age for the files, `0` by default.
 - `options.cacheControl` (str) - optional cache control header. Overrides `options.maxAge`.
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
-- `options.gzip` (bool) - when request's accept-encoding include gzip, files will compressed by gzip.
-- `options.charset` (str | function) - optional charset appended to `Content-Type`. If a function is supplied, it receives `(file, type)` and can return a charset per file.
-- `options.usePrecompiledGzip` (bool) - try use gzip files, loaded from disk, like nginx gzip_static
+- `options.gzip` (bool) - when the request's Accept-Encoding includes gzip, files will be compressed using gzip.
+- `options.charset` (str | function) - optional charset appended to `Content-Type`. If a function is supplied, it receives `(file, type)`, where `file` is the relative file path, and can return a charset per file.
+- `options.usePrecompiledGzip` (bool) - try to use gzip files, loaded from disk, like nginx gzip_static
 - `options.alias` (obj) - object map of aliases. See below.
-- `options.prefix` (str) - the url prefix you wish to add, default to `''`.
+- `options.prefix` (str) - the URL prefix you wish to add, defaults to `''`.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.
 - `options.filter` (function | array) - filter files at init dir, for example - skip non build (source) files. If array set - allow only listed files
 - `options.preload` (bool) - caches the assets on initialization or not, default to `true`. always work together with `options.dynamic`.

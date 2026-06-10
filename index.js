@@ -190,7 +190,8 @@ function loadFile(name, dir, options, files) {
   var charset = typeof options.charset === 'function'
     ? options.charset(name, type)
     : options.charset
-  obj.type = obj.mime = charset
+  obj.mime = type
+  obj.type = charset
     ? type + '; charset=' + charset
     : type
   obj.mtime = stats.mtime
