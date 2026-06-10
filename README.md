@@ -49,6 +49,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.cacheControl` (str) - optional cache control header. Overrides `options.maxAge`.
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
 - `options.gzip` (bool) - when request's accept-encoding include gzip, files will compressed by gzip.
+- `options.charset` (str | function) - optional charset appended to `Content-Type`. If a function is supplied, it receives `(file, type)` and can return a charset per file.
 - `options.usePrecompiledGzip` (bool) - try use gzip files, loaded from disk, like nginx gzip_static
 - `options.alias` (obj) - object map of aliases. See below.
 - `options.prefix` (str) - the url prefix you wish to add, default to `''`.

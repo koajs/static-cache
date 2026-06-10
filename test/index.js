@@ -150,6 +150,42 @@ describe('Static Cache', function () {
     })
   })
 
+  it('should serve files with configured charset', function (done) {
+    var app = new Koa()
+    app.use(staticCache(path.join(__dirname, '..'), {
+      charset: 'iso-8859-1',
+      filter(file) {
+        return file === 'README.md'
+      }
+    }))
+    var server = app.listen()
+
+    request(server)
+    .get('/README.md')
+    .expect('Content-Type', 'text/markdown; charset=iso-8859-1')
+    .expect(200, done)
+  })
+
+  it('should serve files with function configured charset', function (done) {
+    var app = new Koa()
+    app.use(staticCache(path.join(__dirname, '..'), {
+      charset(file, type) {
+        return file === 'README.md' && type === 'text/markdown'
+          ? 'windows-1252'
+          : undefined
+      },
+      filter(file) {
+        return file === 'README.md'
+      }
+    }))
+    var server = app.listen()
+
+    request(server)
+    .get('/README.md')
+    .expect('Content-Type', 'text/markdown; charset=windows-1252')
+    .expect(200, done)
+  })
+
   it('should serve recursive files', function (done) {
     request(server)
     .get('/test/index.js')

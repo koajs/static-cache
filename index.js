@@ -186,7 +186,13 @@ function loadFile(name, dir, options, files) {
 
   obj.cacheControl = options.cacheControl
   obj.maxAge = (typeof obj.maxAge === 'number' ? obj.maxAge : options.maxAge) || 0
-  obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
+  var type = mime.lookup(pathname) || 'application/octet-stream'
+  var charset = typeof options.charset === 'function'
+    ? options.charset(name, type)
+    : options.charset
+  obj.type = obj.mime = charset
+    ? type + '; charset=' + charset
+    : type
   obj.mtime = stats.mtime
   obj.length = stats.size
   obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
