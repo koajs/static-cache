@@ -182,14 +182,19 @@ function loadFile(name, dir, options, files) {
   var obj = files.get(pathname)
   var filename = obj.path = path.join(dir, name)
   var stats = fs.statSync(filename)
-  var buffer = fs.readFileSync(filename)
+  var buffer = null
+  try {
+    buffer = fs.readFileSync(filename)
+  } catch (err) {
+    if (options.buffer || err.code !== 'ERR_FS_FILE_TOO_LARGE') throw err
+  }
 
   obj.cacheControl = options.cacheControl
   obj.maxAge = (typeof obj.maxAge === 'number' ? obj.maxAge : options.maxAge) || 0
   obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
   obj.mtime = stats.mtime
   obj.length = stats.size
-  obj.md5 = crypto.createHash('md5').update(buffer).digest('base64')
+  obj.md5 = buffer && crypto.createHash('md5').update(buffer).digest('base64')
 
   debug('file: ' + JSON.stringify(obj, null, 2))
   if (options.buffer)
