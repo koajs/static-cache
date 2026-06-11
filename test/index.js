@@ -1,10 +1,12 @@
 var fs = require('fs')
 var crypto = require('crypto')
 var zlib = require('zlib')
+var mzzlib = require('mz/zlib')
 var request = require('supertest')
 var should = require('should')
 var Koa = require('koa')
 var http = require('http')
+var os = require('os')
 var path = require('path')
 var staticCache = require('..')
 var LRU = require('ylru')
@@ -365,6 +367,53 @@ describe('Static Cache', function () {
 
         done()
       })
+    })
+  })
+
+  it('should serve precompiled gzip when streaming dynamic files', function (done) {
+    var app = new Koa()
+    var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'static-cache-'))
+    var filename = path.join(dir, 'asset.js')
+    var gzFilename = filename + '.gz'
+    var content = Buffer.alloc(2048, 'a')
+    var gzContent = zlib.gzipSync(content)
+    var originalCreateGzip = mzzlib.createGzip
+    var server
+
+    fs.writeFileSync(filename, content)
+    fs.writeFileSync(gzFilename, gzContent)
+
+    mzzlib.createGzip = function () {
+      throw new Error('dynamic gzip should not be used')
+    }
+
+    function cleanup() {
+      mzzlib.createGzip = originalCreateGzip
+      if (server) server.close()
+      fs.unlinkSync(gzFilename)
+      fs.unlinkSync(filename)
+      fs.rmdirSync(dir)
+    }
+
+    app.use(staticCache(dir, {
+      buffer: false,
+      dynamic: true,
+      preload: false,
+      gzip: true,
+      usePrecompiledGzip: true
+    }))
+
+    server = app.listen()
+    request(server)
+    .get('/asset.js')
+    .set('Accept-Encoding', 'gzip')
+    .expect(200)
+    .expect('Content-Encoding', 'gzip')
+    .expect('Content-Length', String(gzContent.length))
+    .expect(content.toString())
+    .end(function (err) {
+      cleanup()
+      done(err)
     })
   })
 

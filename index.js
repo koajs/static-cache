@@ -136,6 +136,17 @@ module.exports = function staticCache(dir, options, files) {
       return
     }
 
+    var precompiledGzip = shouldGzip && options.usePrecompiledGzip
+      ? await getPrecompiledGzip(file, filename, files)
+      : null
+
+    if (precompiledGzip) {
+      ctx.set('content-encoding', 'gzip')
+      ctx.length = precompiledGzip.length
+      ctx.body = precompiledGzip.buffer || fs.createReadStream(precompiledGzip.path)
+      return
+    }
+
     var stream = fs.createReadStream(file.path)
 
     // update file hash
@@ -154,6 +165,26 @@ module.exports = function staticCache(dir, options, files) {
       ctx.set('content-encoding', 'gzip')
       ctx.body = stream.pipe(zlib.createGzip())
     }
+  }
+}
+
+async function getPrecompiledGzip(file, filename, files) {
+  var gzFile = files.get(filename + '.gz')
+  if (gzFile) return gzFile
+
+  var gzPath = file.path + '.gz'
+  var stats
+  try {
+    stats = await fs.stat(gzPath)
+  } catch (err) {
+    if (err.code === 'ENOENT' || err.code === 'ENOTDIR') return null
+    throw err
+  }
+
+  if (!stats.isFile()) return null
+  return {
+    path: gzPath,
+    length: stats.size
   }
 }
 
