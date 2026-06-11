@@ -1,10 +1,12 @@
 var fs = require('fs')
+var mzfs = require('mz/fs')
 var crypto = require('crypto')
 var zlib = require('zlib')
 var request = require('supertest')
 var should = require('should')
 var Koa = require('koa')
 var http = require('http')
+var os = require('os')
 var path = require('path')
 var staticCache = require('..')
 var LRU = require('ylru')
@@ -413,6 +415,62 @@ describe('Static Cache', function () {
       .expect(200, function(err) {
         fs.unlinkSync('a.js')
         done(err)
+      })
+  })
+
+  it('should not cache partial file data when dynamic load fails', function (done) {
+    var app = new Koa()
+    var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'static-cache-'))
+    var filename = path.join(dir, 'asset.txt')
+    var files = {}
+    var originalReadFileSync = mzfs.readFileSync
+    var shouldFail = true
+    var server
+
+    app.silent = true
+    fs.writeFileSync(filename, 'hello world')
+
+    mzfs.readFileSync = function (file) {
+      if (file === filename && shouldFail) {
+        shouldFail = false
+        throw new Error('read failed')
+      }
+
+      return originalReadFileSync.apply(this, arguments)
+    }
+
+    function cleanup() {
+      mzfs.readFileSync = originalReadFileSync
+      if (server) server.close()
+      fs.unlinkSync(filename)
+      fs.rmdirSync(dir)
+    }
+
+    app.use(staticCache(dir, {
+      dynamic: true,
+      preload: false,
+      files: files
+    }))
+
+    server = app.listen()
+    request(server)
+      .get('/asset.txt')
+      .expect(500, function (err) {
+        if (err) {
+          cleanup()
+          return done(err)
+        }
+
+        should.not.exist(files['/asset.txt'])
+
+        request(server)
+          .get('/asset.txt')
+          .expect(200)
+          .expect('hello world')
+          .end(function (err) {
+            cleanup()
+            done(err)
+          })
       })
   })
 
