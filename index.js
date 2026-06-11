@@ -182,6 +182,8 @@ async function getPrecompiledGzip(file, filename, files) {
   }
 
   if (!stats.isFile()) return null
+  if (stats.mtime.getTime() < file.mtime.getTime()) return null
+
   return {
     path: gzPath,
     length: stats.size

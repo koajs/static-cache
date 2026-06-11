@@ -382,6 +382,7 @@ describe('Static Cache', function () {
 
     fs.writeFileSync(filename, content)
     fs.writeFileSync(gzFilename, gzContent)
+    fs.utimesSync(gzFilename, new Date(), new Date(Date.now() + 1000))
 
     mzzlib.createGzip = function () {
       throw new Error('dynamic gzip should not be used')
@@ -390,9 +391,9 @@ describe('Static Cache', function () {
     function cleanup() {
       mzzlib.createGzip = originalCreateGzip
       if (server) server.close()
-      fs.unlinkSync(gzFilename)
-      fs.unlinkSync(filename)
-      fs.rmdirSync(dir)
+      try { fs.unlinkSync(gzFilename) } catch (err) {}
+      try { fs.unlinkSync(filename) } catch (err) {}
+      try { fs.rmdirSync(dir) } catch (err) {}
     }
 
     app.use(staticCache(dir, {
@@ -410,6 +411,48 @@ describe('Static Cache', function () {
     .expect(200)
     .expect('Content-Encoding', 'gzip')
     .expect('Content-Length', String(gzContent.length))
+    .expect(content.toString())
+    .end(function (err) {
+      cleanup()
+      done(err)
+    })
+  })
+
+  it('should ignore stale precompiled gzip when streaming dynamic files', function (done) {
+    var app = new Koa()
+    var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'static-cache-'))
+    var filename = path.join(dir, 'asset.js')
+    var gzFilename = filename + '.gz'
+    var content = Buffer.alloc(2048, 'a')
+    var gzContent = zlib.gzipSync(Buffer.alloc(2048, 'b'))
+    var server
+
+    fs.writeFileSync(filename, content)
+    fs.writeFileSync(gzFilename, gzContent)
+    fs.utimesSync(filename, new Date(), new Date(Date.now() + 1000))
+    fs.utimesSync(gzFilename, new Date(), new Date())
+
+    function cleanup() {
+      if (server) server.close()
+      try { fs.unlinkSync(gzFilename) } catch (err) {}
+      try { fs.unlinkSync(filename) } catch (err) {}
+      try { fs.rmdirSync(dir) } catch (err) {}
+    }
+
+    app.use(staticCache(dir, {
+      buffer: false,
+      dynamic: true,
+      preload: false,
+      gzip: true,
+      usePrecompiledGzip: true
+    }))
+
+    server = app.listen()
+    request(server)
+    .get('/asset.js')
+    .set('Accept-Encoding', 'gzip')
+    .expect(200)
+    .expect('Content-Encoding', 'gzip')
     .expect(content.toString())
     .end(function (err) {
       cleanup()
