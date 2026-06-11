@@ -1,10 +1,12 @@
 var fs = require('fs')
+var mzfs = require('mz/fs')
 var crypto = require('crypto')
 var zlib = require('zlib')
 var request = require('supertest')
 var should = require('should')
 var Koa = require('koa')
 var http = require('http')
+var os = require('os')
 var path = require('path')
 var staticCache = require('..')
 var LRU = require('ylru')
@@ -618,5 +620,46 @@ describe('Static Cache', function () {
       .get('/%2E%2E/package.json')
       .expect(404)
       .end(done)
+  })
+
+  it('should stream dynamic files when unbuffered read is too large', function (done) {
+    var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'static-cache-'))
+    var filename = path.join(dir, 'large.bin')
+    var originalReadFileSync = mzfs.readFileSync
+    var app = new Koa()
+    var server
+
+    fs.writeFileSync(filename, 'large file')
+    mzfs.readFileSync = function (file) {
+      if (file === filename) {
+        var err = new RangeError('File size is greater than 2 GiB')
+        err.code = 'ERR_FS_FILE_TOO_LARGE'
+        throw err
+      }
+      return originalReadFileSync.apply(this, arguments)
+    }
+
+    function cleanup() {
+      mzfs.readFileSync = originalReadFileSync
+      if (server) server.close()
+      fs.unlinkSync(filename)
+      fs.rmdirSync(dir)
+    }
+
+    app.use(staticCache(dir, {
+      buffer: false,
+      dynamic: true,
+      preload: false
+    }))
+
+    server = app.listen()
+    request(server)
+      .get('/large.bin')
+      .expect(200)
+      .expect('large file')
+      .end(function (err) {
+        cleanup()
+        done(err)
+      })
   })
 })
