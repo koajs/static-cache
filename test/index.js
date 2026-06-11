@@ -1,5 +1,5 @@
 var fs = require('fs')
-var mzfs = require('mz/fs')
+var staticFs = require('mz/fs')
 var crypto = require('crypto')
 var zlib = require('zlib')
 var request = require('supertest')
@@ -423,14 +423,14 @@ describe('Static Cache', function () {
     var dir = fs.mkdtempSync(path.join(os.tmpdir(), 'static-cache-'))
     var filename = path.join(dir, 'asset.txt')
     var files = {}
-    var originalReadFileSync = mzfs.readFileSync
+    var originalReadFileSync = staticFs.readFileSync
     var shouldFail = true
     var server
 
     app.silent = true
     fs.writeFileSync(filename, 'hello world')
 
-    mzfs.readFileSync = function (file) {
+    staticFs.readFileSync = function (file) {
       if (file === filename && shouldFail) {
         shouldFail = false
         throw new Error('read failed')
@@ -440,10 +440,10 @@ describe('Static Cache', function () {
     }
 
     function cleanup() {
-      mzfs.readFileSync = originalReadFileSync
+      staticFs.readFileSync = originalReadFileSync
       if (server) server.close()
-      fs.unlinkSync(filename)
-      fs.rmdirSync(dir)
+      try { fs.unlinkSync(filename) } catch (err) {}
+      try { fs.rmdirSync(dir) } catch (err) {}
     }
 
     app.use(staticCache(dir, {
