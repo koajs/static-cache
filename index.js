@@ -178,12 +178,12 @@ function safeDecodeURIComponent(text) {
 
 function loadFile(name, dir, options, files) {
   var pathname = path.normalize(path.join(options.prefix, name))
-  if (!files.get(pathname)) files.set(pathname, {})
-  var obj = files.get(pathname)
-  var filename = obj.path = path.join(dir, name)
+  var obj = files.get(pathname) || {}
+  var filename = path.join(dir, name)
   var stats = fs.statSync(filename)
   var buffer = fs.readFileSync(filename)
 
+  obj.path = filename
   obj.cacheControl = options.cacheControl
   obj.maxAge = (typeof obj.maxAge === 'number' ? obj.maxAge : options.maxAge) || 0
   obj.type = obj.mime = mime.lookup(pathname) || 'application/octet-stream'
@@ -195,6 +195,7 @@ function loadFile(name, dir, options, files) {
   if (options.buffer)
     obj.buffer = buffer
 
+  files.set(pathname, obj)
   buffer = null
   return obj
 }
