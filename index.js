@@ -77,18 +77,14 @@ module.exports = function staticCache(dir, options, files) {
       file = loadFile(filename, dir, options, files)
     }
 
+    if (!await refreshFile(file)) {
+      files.set(filename, null)
+      return await next()
+    }
+
     ctx.status = 200
 
     if (enableGzip) ctx.vary('Accept-Encoding')
-
-    if (!file.buffer) {
-      var stats = await fs.stat(file.path)
-      if (stats.mtime.getTime() !== file.mtime.getTime()) {
-        file.mtime = stats.mtime
-        file.md5 = null
-        file.length = stats.size
-      }
-    }
 
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
@@ -163,6 +159,35 @@ function safeDecodeURIComponent(text) {
   } catch (e) {
     return text
   }
+}
+
+async function refreshFile(file) {
+  var stats
+  try {
+    stats = await fs.stat(file.path)
+  } catch (err) {
+    if (err && err.code === 'ENOENT') return false
+    throw err
+  }
+
+  if (stats.mtime.getTime() === file.mtime.getTime() && stats.size === file.length) return true
+
+  file.mtime = stats.mtime
+  file.md5 = null
+  file.length = stats.size
+  file.zipBuffer = null
+
+  if (file.buffer) {
+    try {
+      file.buffer = await fs.readFile(file.path)
+    } catch (err) {
+      if (err && err.code === 'ENOENT') return false
+      throw err
+    }
+    file.md5 = crypto.createHash('md5').update(file.buffer).digest('base64')
+  }
+
+  return true
 }
 
 /**
