@@ -189,6 +189,83 @@ describe('Static Cache', function () {
     })
   })
 
+  it('should refresh buffered gzip cache when the source changes', function (done) {
+    var app = new Koa()
+    var files = {}
+    var filename = 'buffer-gzip-freshness.txt'
+    var before = new Array(2049).join('a')
+    var after = new Array(2049).join('b')
+
+    fs.writeFileSync(filename, before)
+    app.use(staticCache({
+      buffer: true,
+      dynamic: true,
+      gzip: true,
+      preload: false,
+      files: files
+    }))
+
+    request(app.listen())
+    .get('/' + filename)
+    .set('Accept-Encoding', 'gzip')
+    .expect('Content-Encoding', 'gzip')
+    .expect(200, before, function (err) {
+      if (err) {
+        fs.unlinkSync(filename)
+        return done(err)
+      }
+
+      var zipBuffer = files['/' + filename].zipBuffer
+      var future = new Date(Date.now() + 2000)
+      fs.writeFileSync(filename, after)
+      fs.utimesSync(filename, future, future)
+
+      request(app.listen())
+      .get('/' + filename)
+      .set('Accept-Encoding', 'gzip')
+      .expect('Content-Encoding', 'gzip')
+      .expect(200, after, function (err) {
+        fs.unlinkSync(filename)
+        if (err) return done(err)
+
+        Buffer.compare(files['/' + filename].zipBuffer, zipBuffer).should.not.equal(0)
+        done()
+      })
+    })
+  })
+
+  it('should fall through when a cached buffered file is removed', function (done) {
+    var app = new Koa()
+    var files = {}
+    var filename = 'buffer-removed.txt'
+
+    fs.writeFileSync(filename, 'cached')
+    app.use(staticCache({
+      buffer: true,
+      dynamic: true,
+      preload: false,
+      files: files
+    }))
+
+    request(app.listen())
+    .get('/' + filename)
+    .expect(200, 'cached', function (err) {
+      if (err) {
+        fs.unlinkSync(filename)
+        return done(err)
+      }
+
+      fs.unlinkSync(filename)
+
+      request(app.listen())
+      .get('/' + filename)
+      .expect(404, function (err) {
+        should(files['/' + filename]).equal(null)
+        done(err)
+      })
+    })
+  })
+
   it('should serve recursive files', function (done) {
     request(server)
     .get('/test/index.js')
