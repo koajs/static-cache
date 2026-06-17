@@ -150,6 +150,45 @@ describe('Static Cache', function () {
     })
   })
 
+  it('should refresh buffered files when the source changes', function (done) {
+    var app = new Koa()
+    var files = {}
+    var filename = 'buffer-freshness.txt'
+
+    fs.writeFileSync(filename, 'before')
+    app.use(staticCache({
+      buffer: true,
+      dynamic: true,
+      preload: false,
+      files: files
+    }))
+
+    request(app.listen())
+    .get('/' + filename)
+    .expect(200, 'before', function (err, res) {
+      if (err) {
+        fs.unlinkSync(filename)
+        return done(err)
+      }
+
+      var etag = res.headers.etag
+      var future = new Date(Date.now() + 2000)
+      fs.writeFileSync(filename, 'after!')
+      fs.utimesSync(filename, future, future)
+
+      request(app.listen())
+      .get('/' + filename)
+      .expect(200, 'after!', function (err, res) {
+        fs.unlinkSync(filename)
+        if (err) return done(err)
+
+        files['/' + filename].buffer.toString().should.equal('after!')
+        res.headers.etag.should.not.equal(etag)
+        done()
+      })
+    })
+  })
+
   it('should serve recursive files', function (done) {
     request(server)
     .get('/test/index.js')
