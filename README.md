@@ -50,6 +50,7 @@ app.use(staticCache(path.join(__dirname, 'public'), {
 - `options.buffer` (bool) - store the files in memory instead of streaming from the filesystem on each request.
 - `options.gzip` (bool) - when request's accept-encoding include gzip, files will compressed by gzip.
 - `options.usePrecompiledGzip` (bool) - try use gzip files, loaded from disk, like nginx gzip_static
+- `options.setHeaders` (function) - optional `function (ctx, file)` hook to set custom response headers for matched files.
 - `options.alias` (obj) - object map of aliases. See below.
 - `options.prefix` (str) - the url prefix you wish to add, default to `''`.
 - `options.dynamic` (bool) - dynamic load file which not cached on initialization.

@@ -22,6 +22,9 @@ module.exports = function staticCache(dir, options, files) {
   dir = path.normalize(dir)
   var enableGzip = !!options.gzip
   var filePrefix = path.normalize(options.prefix.replace(/^\//, ''))
+  var setHeaders = typeof options.setHeaders === 'function'
+    ? options.setHeaders
+    : null
 
   // option.filter
   var fileFilter = function () { return true }
@@ -92,6 +95,7 @@ module.exports = function staticCache(dir, options, files) {
 
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
+    if (setHeaders) setHeaders(ctx, file)
 
     if (ctx.fresh) return ctx.status = 304
 

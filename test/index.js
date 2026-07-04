@@ -250,6 +250,98 @@ describe('Static Cache', function () {
     .expect(200, done)
   })
 
+  it('should set custom headers for streamed files', function (done) {
+    var app = new Koa()
+    var seenFile
+    app.use(staticCache(path.join(__dirname, '..'), {
+      setHeaders: function (ctx, file) {
+        seenFile = file
+        ctx.set('X-Static-Cache', file.type)
+      },
+      filter(file) {
+        return !file.includes('node_modules')
+      }
+    }))
+
+    request(app.listen())
+    .get('/index.js')
+    .expect('X-Static-Cache', /javascript/)
+    .expect(200, function (err) {
+      if (err)
+        return done(err)
+
+      seenFile.type.should.match(/javascript/)
+      seenFile.path.should.endWith('index.js')
+      done()
+    })
+  })
+
+  it('should set custom headers for buffered files', function (done) {
+    var app = new Koa()
+    var seenFile
+    app.use(staticCache(path.join(__dirname, '..'), {
+      buffer: true,
+      setHeaders: function (ctx, file) {
+        seenFile = file
+        ctx.set('X-Static-Length', String(file.length))
+      },
+      filter(file) {
+        return !file.includes('node_modules')
+      }
+    }))
+
+    request(app.listen())
+    .get('/index.js')
+    .expect('X-Static-Length', String(fs.statSync('index.js').size))
+    .expect(200, function (err) {
+      if (err)
+        return done(err)
+
+      should.exist(seenFile.buffer)
+      seenFile.path.should.endWith('index.js')
+      done()
+    })
+  })
+
+  it('should set custom headers before returning 304 responses', function (done) {
+    var app = new Koa()
+    var seenFile
+    app.use(staticCache(path.join(__dirname, '..'), {
+      setHeaders: function (ctx, file) {
+        seenFile = file
+        ctx.set('X-Static-Cache', file.type)
+      },
+      filter(file) {
+        return file === 'index.js'
+      }
+    }))
+
+    var server = app.listen()
+
+    request(server)
+    .get('/index.js')
+    .expect('X-Static-Cache', /javascript/)
+    .expect(200, function (err, res) {
+      if (err) {
+        server.close()
+        return done(err)
+      }
+
+      request(server)
+      .get('/index.js')
+      .set('If-None-Match', res.headers.etag)
+      .expect('X-Static-Cache', /javascript/)
+      .expect(304, function (err) {
+        server.close()
+        if (err)
+          return done(err)
+
+        seenFile.type.should.match(/javascript/)
+        done()
+      })
+    })
+  })
+
   it('should set Last-Modified if file modified and not buffered', function (done) {
     setTimeout(function () {
       var readme = fs.readFileSync('README.md', 'utf8')
