@@ -303,6 +303,45 @@ describe('Static Cache', function () {
     })
   })
 
+  it('should set custom headers before returning 304 responses', function (done) {
+    var app = new Koa()
+    var seenFile
+    app.use(staticCache(path.join(__dirname, '..'), {
+      setHeaders: function (ctx, file) {
+        seenFile = file
+        ctx.set('X-Static-Cache', file.type)
+      },
+      filter(file) {
+        return file === 'index.js'
+      }
+    }))
+
+    var server = app.listen()
+
+    request(server)
+    .get('/index.js')
+    .expect('X-Static-Cache', /javascript/)
+    .expect(200, function (err, res) {
+      if (err) {
+        server.close()
+        return done(err)
+      }
+
+      request(server)
+      .get('/index.js')
+      .set('If-None-Match', res.headers.etag)
+      .expect('X-Static-Cache', /javascript/)
+      .expect(304, function (err) {
+        server.close()
+        if (err)
+          return done(err)
+
+        seenFile.type.should.match(/javascript/)
+        done()
+      })
+    })
+  })
+
   it('should set Last-Modified if file modified and not buffered', function (done) {
     setTimeout(function () {
       var readme = fs.readFileSync('README.md', 'utf8')

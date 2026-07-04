@@ -95,6 +95,7 @@ module.exports = function staticCache(dir, options, files) {
 
     ctx.response.lastModified = file.mtime
     if (file.md5) ctx.response.etag = file.md5
+    if (setHeaders) setHeaders(ctx, file)
 
     if (ctx.fresh) return ctx.status = 304
 
@@ -102,7 +103,6 @@ module.exports = function staticCache(dir, options, files) {
     ctx.length = file.zipBuffer ? file.zipBuffer.length : file.length
     ctx.set('cache-control', file.cacheControl || 'public, max-age=' + file.maxAge)
     if (file.md5) ctx.set('content-md5', file.md5)
-    if (setHeaders) setHeaders(ctx, file)
 
     if (ctx.method === 'HEAD') return
 
